@@ -12,6 +12,8 @@ typedef struct node {
 // Define functions
 void push(node_t** head, unsigned int index, double min, double max);
 void pop(node_t** head, unsigned int index);
+void pop_head(node_t** head);
+void print_list(node_t* head);
 
 int main() {
 
@@ -28,9 +30,9 @@ int main() {
 	// Initialize list
 	node_t* head = NULL;
 	head = malloc(sizeof(node_t));
-	head->index = 1;
-	head->min = 1;
-	head->max = 1;
+	head->index = 0;
+	head->min = 0;
+	head->max = 0;
 	head->next = NULL;
 
   // Program loop
@@ -47,6 +49,7 @@ int main() {
 				printf("2\n");
 				break;
 			case 'P':
+        print_list(head);
 				break;
 			case 'Q':
 				running = 0;
@@ -75,4 +78,54 @@ void push(node_t** head, unsigned int index, double min, double max) {
 
 	// Move head to new node
 	*head = newNode;
+}
+
+// Pop function
+void pop(node_t** head, unsigned int index) {
+
+  // Next node
+  node_t* current = *head;
+  node_t* tmp = NULL;
+
+  if (index == 0) { // Pop head
+    pop_head(head);
+  } else { // Pop non-head
+    while (current->next != NULL) {
+      if (current->next->index == index) {
+        break;
+      }
+      current = current->next;
+    }
+
+    tmp = current->next; // Set tmp node to the one we remove
+    if (tmp != NULL) {
+      current->next = tmp->next; // Remove from list
+      free(tmp);
+    }
+  }
+
+}
+
+// Pops the head
+void pop_head(node_t** head) {
+
+  node_t* next = (*head)->next; // Get next node (the new head)
+  free(*head); // Free the (old) head
+  *head = next; // Set new head
+}
+
+
+// Prints the list
+void print_list(node_t* head) {
+
+  // Set current node to head
+  node_t* current = head;
+
+  // Print
+  printf("Index\tMin\tMax\n");
+  while (current != NULL) {
+    if ((current->index) > 0 && (current->index < 32))
+      printf("%d\t%.2lf\t%.2lf\n", current->index, current->min, current->max);
+    current = current->next; // Iterate
+  }
 }
