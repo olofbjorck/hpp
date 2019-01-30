@@ -108,7 +108,6 @@ void pop(node_t** head, unsigned int index) {
 
 // Pops the head
 void pop_head(node_t** head) {
-
   node_t* next = (*head)->next; // Get next node (the new head)
   free(*head); // Free the (old) head
   *head = next; // Set new head
