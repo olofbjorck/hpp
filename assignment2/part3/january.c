@@ -97,6 +97,7 @@ void pop(node_t** head, unsigned int index) {
       current = current->next;
     }
 
+    // Free node
     tmp = current->next; // Set tmp node to the one we remove
     if (tmp != NULL) {
       current->next = tmp->next; // Remove from list
@@ -112,7 +113,6 @@ void pop_head(node_t** head) {
   free(*head); // Free the (old) head
   *head = next; // Set new head
 }
-
 
 // Prints the list
 void print_list(node_t* head) {
