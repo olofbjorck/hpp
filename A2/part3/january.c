@@ -19,7 +19,7 @@ void flushInput();
 
 int main() {
 
-	// Declare variables
+	// Declare variables outside loop
 	char action;	// User command
 	char errorCheck;
 	int running = 1;
@@ -159,24 +159,26 @@ void pop(node_t** head, unsigned int index) {
 	node_t* current = *head;
 	node_t* tmp = NULL;
 
-	// If head has correct index, pop head
-	if((*head)->index == index) {
-		popHead(head);
-		// Else iterate through list
-	} else {
-		while (current->next) {
-			if (current->next->index == index) {
-				break;
+	if(*head) {
+		// If head has correct index, pop head
+		if((*head)->index == index) {
+			popHead(head);
+			// Else iterate through list
+		} else {
+			while (current->next) {
+				if (current->next->index == index) {
+					break;
+				}
+				current = current->next;
 			}
-			current = current->next;
-		}
 
-		// Store pop node in temp variable to refactor pointers
-		// tmp is NULL if index did not exist in list
-		tmp = current->next;
-		if (tmp) {
-			current->next = tmp->next;
-			free(tmp);
+			// Store pop node in temp variable to refactor pointers
+			// tmp is NULL if index did not exist in list
+			tmp = current->next;
+			if (tmp) {
+				current->next = tmp->next;
+				free(tmp);
+			}
 		}
 	}
 }
