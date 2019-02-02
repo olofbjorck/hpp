@@ -13,8 +13,10 @@ int main(int argc, char** argv) {
 	}
 
 	// Print the combination
-	for(int i=0; i<n; i++) {
-		for(int j=0; j<=i; j++) {
+  int i;
+  int j;
+	for(i=0; i<n; i++) {
+		for(j=0; j<=i; j++) {
 			printf("%d ", combination(i,j));
 		}
 		printf("\n");
@@ -26,7 +28,9 @@ int main(int argc, char** argv) {
 // Compute the combination
 int combination(int n, int k) {
 	int sum = 1;
-	for(int i=1; i<=k; i++) {
+
+  int i;
+	for(i=1; i<=k; i++) {
 		sum	= sum*(n+1-i)/i;	// avoid mult. assignment as int division floors
 	}
 	return sum;
