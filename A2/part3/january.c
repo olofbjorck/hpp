@@ -46,7 +46,6 @@ int main() {
 				} else {
 					flushInput();
 				}
-				//printf(" >> Added index %d\n", index);
 				break;
 			case 'D':
 				scanf("%u", &index);
@@ -56,7 +55,6 @@ int main() {
 				} else {
 					flushInput();
 				}
-				//printf(" >> Deleted index %d\n", index);
 				break;
 			case 'P':
 				scanf("%c", &errorCheck);
@@ -83,7 +81,7 @@ int main() {
 	return 0;
 }
 
-void flushInput() { 
+void flushInput() {
 	char flush;		// Used for flushing output
 	printf("Syntax Error: Invalid command");
 	// Read rest of junk input into junk variable (flush)
@@ -129,7 +127,7 @@ void placeNodeSorted(node_t** node, node_t* newNode) {
 		// Else new node is greater than head
 	} else {
 
-		// If next node exists 
+		// If next node exists
 		if ((*node)->next) {
 
 			// If new node has larger index than node->next->index, recurse
@@ -170,7 +168,7 @@ void pop(node_t** head, unsigned int index) {
 			if (current->next->index == index) {
 				break;
 			}
-			current = current->next; 
+			current = current->next;
 		}
 
 		// Store pop node in temp variable to refactor pointers
