@@ -18,7 +18,7 @@ typedef struct particle {
 
 
 // Read input data
-void readData(particle_t* particles, const char* filename, int N);
+int readData(particle_t* particles, const char* filename, int N);
 // Simulates the galaxies
 void simulate(particle_t*);
 // Saves final positions and velocities to result.gal
@@ -52,7 +52,7 @@ int main(int argc, char const *argv[]) {
 
   // Create array with all particles
   particle_t particles[N]; // Use malloc? N can be large?
-  readData(particles, filename, N);
+  if (!readData(particles, filename, N)) return 0;
   printParticles(particles, N);
   // calculateForces(particles);
   simulate(particles); // calculateForces is part of the simulation
@@ -62,26 +62,33 @@ int main(int argc, char const *argv[]) {
 }
 
 // Read data from file.
-void readData(particle_t* particles, const char* filename, int N) {
+int readData(particle_t* particles, const char* filename, int N) {
 
   // Open file
   FILE* fp = fopen(filename, "r");
 
 // TODO: Check if at end of file? Currently reads a new particle with vals = 0
 
-  // Read file
-  int i;
-  for (i = 0; i < N; i++) {
-    fread(&particles[i].x, sizeof(double), 1, fp);
-    fread(&particles[i].y, sizeof(double), 1, fp);
-    fread(&particles[i].mass, sizeof(double), 1, fp);
-    fread(&particles[i].vx, sizeof(double), 1, fp);
-    fread(&particles[i].vy, sizeof(double), 1, fp);
-    fread(&particles[i].brightness, sizeof(double), 1, fp);
-  }
+  if (fp) {
+    // Read file
+    int i;
+    for (i = 0; i < N; i++) {
+      fread(&particles[i].x, sizeof(double), 1, fp);
+      fread(&particles[i].y, sizeof(double), 1, fp);
+      fread(&particles[i].mass, sizeof(double), 1, fp);
+      fread(&particles[i].vx, sizeof(double), 1, fp);
+      fread(&particles[i].vy, sizeof(double), 1, fp);
+      fread(&particles[i].brightness, sizeof(double), 1, fp);
+    }
 
-  // Close file
-  fclose(fp);
+    // Close file
+    fclose(fp);
+
+    return 1;
+  } else {
+    printf("%s\n", "Error reading file: doesn't exist.");
+    return 0;
+  }
 }
 
 void simulate(particle_t* particles) {
