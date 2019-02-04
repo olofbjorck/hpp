@@ -50,8 +50,8 @@ int main(int argc, char const *argv[]) {
   // Create array with all particles
   particle_t particles[N]; // Use malloc? N can be large?
   readData(particles);
-  calculateForces(particles);
-  simulate(particles);
+  // calculateForces(particles);
+  simulate(particles); // calculateForces is part of the simulatio
   writeOutput(particles);
 
   return 0;
