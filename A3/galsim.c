@@ -34,12 +34,10 @@ void calculateForces(particle_t* particles, int N,
 // Update the particle states with one time step
 void updateParticles(particle_t* particles, int N,
                       double delta_t);
-
 // Saves final positions and velocities to result.gal
 void writeOutput(particle_t* particles, int N);
-
 // Print for debugging. Can choose to print first n particles.
-void printParticles(particle_t*, int);
+void printParticles(particle_t* particles, int);
 
 // Main function
 int main(int argc, char const *argv[]) {
@@ -91,6 +89,7 @@ void simulate(particle_t* particles, int N,
   }
 }
 
+// Calculates force exerted on every particle
 void calculateForces(particle_t* particles, int N, double G, double eps0) {
 
   int i, j; // Loop variables
@@ -121,9 +120,10 @@ void calculateForces(particle_t* particles, int N, double G, double eps0) {
       // Calculate denominator
       denom = r + eps0;
       denom = denom*denom*denom;
+      denom = 1/denom;
       // Calculate force
-      particles[i].force_x += particles[j].mass*r_x/denom;
-      particles[i].force_y += particles[j].mass*r_y/denom;
+      particles[i].force_x += particles[j].mass*r_x*denom;
+      particles[i].force_y += particles[j].mass*r_y*denom;
     }
     particles[i].force_x *= -G*particles[i].mass;
     particles[i].force_y *= -G*particles[i].mass;
