@@ -1,7 +1,12 @@
+// RUN BY:
+// ./galsim 2 circles_N_2.gal 5 0.00001 1
+// ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
+
 // Include libraries
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 // Define particle
 // Vet inte om det är snabbare för alla beräkningar att ha separate arrayer för
@@ -13,18 +18,24 @@ typedef struct particle {
 	double y, vy; // y-position y and y-velocity vy
 	double mass; // particle mass
   double brightness; // particle brightness
-  double force;
+  double force_x, force_y; // Force exerted on particle
 } particle_t;
 
 
 // Read input data
 int readData(particle_t* particles, const char* filename, int N);
-// Simulates the galaxies
-void simulate(particle_t*);
+// Simulate the movement of the particles
+void simulate(particle_t* particles, int N,
+              double G, double eps0, double delta_t);
+// Calculates plummer spheres force
+void calculateForces(particle_t* particles, int N,
+                      double G, double eps0);
+// Update the particle states with one time step
+void updateParticles(particle_t* particles, int N,
+                      double delta_t);
+
 // Saves final positions and velocities to result.gal
 void writeOutput(particle_t* particles, int N);
-// Calculates plummer spheres force
-void calculateForces(particle_t*);
 
 // Print for debugging. Can choose to print first n particles.
 void printParticles(particle_t*, int);
@@ -52,14 +63,63 @@ int main(int argc, char const *argv[]) {
 
   // Create array with all particles
   particle_t particles[N]; // Use malloc? N can be large?
+
+  // Read data
   if (!readData(particles, filename, N)) return 0;
   printParticles(particles, N);
+
   // calculateForces(particles);
-  simulate(particles); // calculateForces is part of the simulation
+  simulate(particles, N, G, eps0, delta_t); // calculateForces is part of the simulation
+  printParticles(particles, N);
+
   writeOutput(particles, N);
 
   return 0;
 }
+
+// Simulate the movement of the particles
+void simulate(particle_t* particles, int N,
+              double G, double eps0, double delta_t) {
+
+  calculateForces(particles, N, G, eps0);
+  updateParticles(particles, N, delta_t);
+}
+
+void calculateForces(particle_t* particles, int N, double G, double eps0) {
+
+  int i, j;
+  double force_x, force_y; // Forces
+  double r, r_x, r_y; // Vector
+  double denom;
+  for (i = 0; i < N; i++) {
+    // Reset forces
+    force_x = 0.0, force_y = 0.0;
+    // Calculate
+    for (j = 0; j < N; j++) {
+      if (j != i) { // This check is unnecessary. Fix when optimizing.
+        // maybe do two for-loops instead?
+        // Calculate r-vector
+        r_x = particles[i].x - particles[j].x;
+        r_y = particles[i].y - particles[j].y;
+        r = sqrt(r_x*r_x + r_y*r_y);
+        // Calculate denominator
+        denom = r + eps0;
+        denom = denom*denom*denom;
+        // Calculate force
+        force_x += particles[j].mass*r_x/denom;
+        force_y += particles[j].mass*r_y/denom;
+      }
+    }
+    particles[i].force_x = -G*particles[i].mass*force_x;
+    particles[i].force_y = -G*particles[i].mass*force_y;
+  }
+}
+
+void updateParticles(particle_t* particles, int N,
+                      double delta_t) {
+
+}
+
 
 // Read data from file.
 int readData(particle_t* particles, const char* filename, int N) {
@@ -91,10 +151,6 @@ int readData(particle_t* particles, const char* filename, int N) {
   }
 }
 
-void simulate(particle_t* particles) {
-
-}
-
 // Write current state of all particles to file
 void writeOutput(particle_t* particles, int N) {
 
@@ -124,6 +180,8 @@ void printParticles(particle_t* particles, int N) {
     printf("Particle %d:\n", i);
     printf("\t(x, y) = (%.2lf, %.2lf)\n", particles[i].x, particles[i].y);
     printf("\t(vx, vy) = (%.2lf, %.2lf)\n", particles[i].vx, particles[i].vy);
+    printf("\t(force_x, force_y) = (%.2lf, %.2lf)\n",
+            particles[i].force_x, particles[i].force_y);
     printf("\tmass = %lf\n", particles[i].mass);
     printf("\tbrightness = %lf\n", particles[i].brightness);
   }
