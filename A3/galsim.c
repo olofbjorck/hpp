@@ -87,17 +87,16 @@ void simulate(particle_t* particles, int N,
 
 void calculateForces(particle_t* particles, int N, double G, double eps0) {
 
-  int i, j;
-  double force_x, force_y; // Forces
+  int i, j; // Loop variables
   double r, r_x, r_y; // Vector
-  double denom;
+  double denom; // Denominator
   for (i = 0; i < N; i++) {
-    // Reset forces
-    force_x = 0.0, force_y = 0.0;
+    // Initialize forces
+    particles[i].force_x = 0.0, particles[i].force_y = 0.0;
     // Calculate
     for (j = 0; j < N; j++) {
       if (j != i) { // This check is unnecessary. Fix when optimizing.
-        // maybe do two for-loops instead?
+        // maybe do two for-loops instead, skipping i = j? 
         // Calculate r-vector
         r_x = particles[i].x - particles[j].x;
         r_y = particles[i].y - particles[j].y;
@@ -106,12 +105,12 @@ void calculateForces(particle_t* particles, int N, double G, double eps0) {
         denom = r + eps0;
         denom = denom*denom*denom;
         // Calculate force
-        force_x += particles[j].mass*r_x/denom;
-        force_y += particles[j].mass*r_y/denom;
+        particles[i].force_x += particles[j].mass*r_x/denom;
+        particles[i].force_y += particles[j].mass*r_y/denom;
       }
     }
-    particles[i].force_x = -G*particles[i].mass*force_x;
-    particles[i].force_y = -G*particles[i].mass*force_y;
+    particles[i].force_x *= -G*particles[i].mass;
+    particles[i].force_y *= -G*particles[i].mass;
   }
 }
 
