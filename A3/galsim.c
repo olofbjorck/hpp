@@ -16,7 +16,7 @@
 typedef struct particle {
 	double x, v_x; // x-position x and x-velocity vx
 	double y, v_y; // y-position y and y-velocity vy
-	double mass; // particle mass
+	double mass;  // particle mass.
   double brightness; // particle brightness
   double force_x, force_y; // Force exerted on particle
 } particle_t;
@@ -29,11 +29,13 @@ void simulate(particle_t* particles, int N,
               double G, double eps0,
               int nsteps, double delta_t);
 // Calculates plummer spheres force
-void calculateForces(particle_t* particles, int N,
+inline void calculateForces(particle_t* particles, int N,
                       double G, double eps0);
 // Update the particle states with one time step
-void updateParticles(particle_t* particles, int N,
+inline void updateParticles(particle_t* particles, int N,
                       double delta_t);
+// Displays graphically the state of the particles
+void showGraphics(particle_t* particles);
 // Saves final positions and velocities to result.gal
 void writeOutput(particle_t* particles, int N);
 // Print for debugging. Can choose to print first n particles.
@@ -56,7 +58,7 @@ int main(int argc, char const *argv[]) {
   const int graphics = atoi(argv[5]); // Graphics on/off as 1/0
 
   // Define some constants
-  const double G = 100/N; // Gravitational constant
+  const double G = 100.0/N; // Gravitational constant
   const double eps0 = 0.001; // Plummer sphere constant
   // delta_t should be 10^-5 = 0.00001 passed as input
 
@@ -65,11 +67,14 @@ int main(int argc, char const *argv[]) {
 
   // Read data
   if (!readData(particles, filename, N)) return 0;
-  printParticles(particles, N);
+  //printParticles(particles, N);
 
   // Simulate movement
   simulate(particles, N, G, eps0, nsteps, delta_t);
-  printParticles(particles, N);
+  //printParticles(particles, N);
+
+  // Show graphics
+  if (graphics) showGraphics(particles);
 
   // Write new state of particles to file
   writeOutput(particles, N);
@@ -93,34 +98,22 @@ void simulate(particle_t* particles, int N,
 void calculateForces(particle_t* particles, int N, double G, double eps0) {
 
   int i, j; // Loop variables
-  double r, r_x, r_y; // Vector
-  double denom; // Denominator
+  double r = 0.0, r_x = 0.0, r_y = 0.0; // Vector
+  double denom = 0.0; // Denominator
   for (i = 0; i < N; i++) {
     // Initialize forces
     particles[i].force_x = 0.0, particles[i].force_y = 0.0;
-    // Loop up until i
-    for (j = 0; j < i; j++) {
+    // Loop
+    for (j = 0; j < N; j++) { // case i==j is no problem as r will be 0.
+                              // Checked timings, this is faster than two
+                              // for-loops, skipping i==j
       // Calculate r-vector
       r_x = particles[i].x - particles[j].x;
       r_y = particles[i].y - particles[j].y;
       r = sqrt(r_x*r_x + r_y*r_y);
       // Calculate denominator
       denom = r + eps0;
-      denom = denom*denom*denom;
-      // Calculate force
-      particles[i].force_x += particles[j].mass*r_x/denom;
-      particles[i].force_y += particles[j].mass*r_y/denom;
-    }
-    // Now loop after i
-    for (j = i + 1; j < N; j++) {
-      // Calculate r-vector
-      r_x = particles[i].x - particles[j].x;
-      r_y = particles[i].y - particles[j].y;
-      r = sqrt(r_x*r_x + r_y*r_y);
-      // Calculate denominator
-      denom = r + eps0;
-      denom = denom*denom*denom;
-      denom = 1/denom;
+      denom = 1/(denom*denom*denom); // 1 msec faster than using /demon below
       // Calculate force
       particles[i].force_x += particles[j].mass*r_x*denom;
       particles[i].force_y += particles[j].mass*r_y*denom;
@@ -135,8 +128,8 @@ void updateParticles(particle_t* particles, int N,
                       double delta_t) {
 
   int i; // Loop variable
-  double a_x, a_y; // Acceleration
-  // Looper over all particles
+  double a_x = 0.0, a_y = 0.0; // Acceleration
+  // Loop over all particles
   for (i = 0; i < N; i++) {
     // Calculate acceleration
     a_x = particles[i].force_x/particles[i].mass;
@@ -178,6 +171,11 @@ int readData(particle_t* particles, const char* filename, int N) {
     printf("%s\n", "Error reading file: doesn't exist.");
     return 0;
   }
+}
+
+// Show particles graphically
+void showGraphics(particle_t* particles) {
+
 }
 
 // Write current state of all particles to file

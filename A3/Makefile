@@ -4,7 +4,7 @@ HEADERS = $(FILENAME).h
 EXE = $(FILENAME)
 
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -O3
 LFLAGS = -lm
 
 $(EXE): $(OBJFILES)
