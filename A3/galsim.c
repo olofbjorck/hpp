@@ -1,23 +1,25 @@
+
+
 // RUN BY:
 // ./galsim 2 circles_N_2.gal 5 0.00001 1
 // ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
 // time ./galsim 10000 input_data/ellipse_N_10000.gal 100 0.00001 1
 
-// Include libraries
+/**
+ * Simulates galaxy movement in outer space.
+ *
+ * Original authors: Olof Björck, Gunnlaugur Geirsson
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-// Define particle
-// Vet inte om det är snabbare för alla beräkningar att ha separate arrayer för
-// allt, än att ha en enda array med massa particle structs. Tänkte att vi
-// kan börja med att implementera med en struct och få allting att fungera,
-// sedan jobba på optimeringen.
-// Array of structs AoS eller Struct of Arrays SoA?
-// Denna order är important! Vi använder x, v_x och force, mass ofta
-// efter varandra.
-// brightness i separat array eftersom den inte används
+/**
+ * Particle struct declaration.
+ *
+ */
 typedef struct particle {
 	double x, v_x; // x-position x and x-velocity vx
 	double y, v_y; // y-position y and y-velocity vy
@@ -26,33 +28,91 @@ typedef struct particle {
   //double brightness; // particle brightness
 } particle_t;
 
-
-// Read input data
-int readData(particle_t* __restrict particles,
+/**
+ * Reads galaxy data from input file "filename" into particle_t* array
+ * particles. Galaxy brightness is stored in separate array double* brightness
+ * for speed as brightness isn't use in calculations. Returns 1 if data was
+ * read successfully, 0 otherwise.
+ *
+ * @param  particles  Information about every particle.
+ * @param  brightness Array with brightness information about every particle.
+ * @param  filename   The input data filename (ending with ".gal").
+ * @param  N          The total number of particles.
+ * @return            Returns 1 if data was read successfully, else 0.
+ */
+static int readData(particle_t* __restrict particles,
               double* __restrict brightness,
               const char* filename, const int N);
-// Simulate the movement of the particles
-void simulate(particle_t* __restrict particles, const int N,
-              const double G, const double eps0,
-              const int nsteps, const double delta_t);
-// Calculates plummer spheres force
-inline void calculateForces(particle_t* __restrict particles, const int N,
+
+/**
+ * Simulates the movement of all the particles in particle_t* particles array.
+ * The simulation calculates the forces acting on each particle and then
+ * updates every particle's state. The simulation is carried out nsteps times,
+ * with timestep delta_t.
+ *
+ * @param particles Information about every particle.
+ * @param N         The total number of particles.
+ * @param G         The Newton gravitational constant G.
+ * @param eps0      Plummer spheres constant to smoothe calculations.
+ * @param nsteps    Number of timesteps to simulate.
+ * @param delta_t   Timestep [seconds].
+ */
+static void simulate(particle_t* __restrict particles, const int N,
+                      const double G, const double eps0,
+                      const int nsteps, const double delta_t);
+
+/**
+ * Calculates and stores the aggregate force exerted on every particle by all
+ * other particles in array particle_t* particles.
+ *
+ * @param particles Information about every particle.
+ * @param N         The total number of particles.
+ * @param G         The Newton gravitational constant G.
+ * @param eps0      Plummer spheres constant to smoothe calculations.
+ */
+inline static void calculateForces(particle_t* __restrict particles, const int N,
                             const double G, const double eps0);
-// Update the particle states with one time step
-inline void updateParticles(particle_t* __restrict particles, const int N,
-                            const double delta_t);
-// Displays graphically the state of the particles
-void showGraphics(particle_t* __restrict particles);
-// Saves final positions and velocities to result.gal
-void writeOutput(particle_t* __restrict particles,
+
+/**
+ * Updates the state of the particles with timestep delta_t. Does not compute
+ * any forces; current forces particles.force_x and particles.force_y need
+ * to be computed and set before using this function.
+ *
+ * @param particles Information about every particle.
+ * @param N         The total number of particles.
+ * @param delta_t   Timestep [seconds].
+ */
+inline static void updateParticles(particle_t* __restrict particles,
+                                    const int N, const double delta_t);
+
+/**
+ * Shows the state of the particles graphically.
+ *
+ * @param particles Information about every particle.
+ */
+static void showGraphics(particle_t* __restrict particles);
+
+/**
+ * Writes current state of all particles to output file "result.gal".
+ *
+ * @param particles  Information about every particle.
+ * @param brightness Array with brightness information about every particle.
+ * @param N          The total number of particles.
+ */
+static void writeOutput(particle_t* __restrict particles,
                   double* __restrict brightness,
                   const int N);
-// Print for debugging. Can choose to print first n particles.
-void printParticles(particle_t* __restrict particles,
+
+/*
+static void printParticles(particle_t* __restrict particles,
                     double* __restrict brightness,
                     const int N);
+*/
 
-// Main function
+/**
+ * Main function
+ *
+ */
 int main(int argc, char const *argv[]) {
 
   // Check proper number of input arguments
@@ -175,7 +235,6 @@ int readData(particle_t* __restrict particles,
       fread(&particles[i].mass, sizeof(double), 1, fp);
       fread(&particles[i].v_x, sizeof(double), 1, fp);
       fread(&particles[i].v_y, sizeof(double), 1, fp);
-      //fread(&particles[i].brightness, sizeof(double), 1, fp);
       fread(&brightness[i], sizeof(double), 1, fp);
     }
 
@@ -210,7 +269,6 @@ void writeOutput(particle_t* __restrict particles,
     fwrite(&particles[i].mass, sizeof(double), 1, fp);
     fwrite(&particles[i].v_x, sizeof(double), 1, fp);
     fwrite(&particles[i].v_y, sizeof(double), 1, fp);
-    //fwrite(&particles[i].brightness, sizeof(double), 1, fp);
     fwrite(&brightness[i], sizeof(double), 1, fp);
   }
 
@@ -218,6 +276,7 @@ void writeOutput(particle_t* __restrict particles,
   fclose(fp);
 }
 
+/*
 // Print particles (for debugging)
 void printParticles(particle_t* __restrict particles,
                     double* __restrict brightness, const int N) {
@@ -233,3 +292,4 @@ void printParticles(particle_t* __restrict particles,
     printf("\tbrightness = %lf\n", brightness[i]);
   }
 }
+*/
