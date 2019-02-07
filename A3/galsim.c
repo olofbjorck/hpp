@@ -1,5 +1,3 @@
-
-
 // RUN BY:
 // ./galsim 2 circles_N_2.gal 5 0.00001 1
 // ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
@@ -11,6 +9,7 @@
  * Original authors: Olof Björck, Gunnlaugur Geirsson
  *
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +41,6 @@ typedef struct particle {
 static int readData(particle_t* __restrict particles,
               double* __restrict brightness,
               const char* filename, const int N);
-
 /**
  * Simulates the movement of all the particles in particle_t* particles array.
  * The simulation calculates the forces acting on each particle and then
@@ -59,7 +57,6 @@ static int readData(particle_t* __restrict particles,
 static void simulate(particle_t* __restrict particles, const int N,
                       const double G, const double eps0,
                       const int nsteps, const double delta_t);
-
 /**
  * Calculates and stores the aggregate force exerted on every particle by all
  * other particles in array particle_t* particles.
@@ -71,7 +68,6 @@ static void simulate(particle_t* __restrict particles, const int N,
  */
 inline static void calculateForces(particle_t* __restrict particles, const int N,
                             const double G, const double eps0);
-
 /**
  * Updates the state of the particles with timestep delta_t. Does not compute
  * any forces; current forces particles.force_x and particles.force_y need
@@ -83,14 +79,12 @@ inline static void calculateForces(particle_t* __restrict particles, const int N
  */
 inline static void updateParticles(particle_t* __restrict particles,
                                     const int N, const double delta_t);
-
 /**
  * Shows the state of the particles graphically.
  *
  * @param particles Information about every particle.
  */
 static void showGraphics(particle_t* __restrict particles);
-
 /**
  * Writes current state of all particles to output file "result.gal".
  *
@@ -260,7 +254,7 @@ int readData(particle_t* __restrict particles,
 
 // Show particles graphically
 void showGraphics(particle_t* __restrict particles) {
-
+  // Not implemented
 }
 
 // Write current state of all particles to file
