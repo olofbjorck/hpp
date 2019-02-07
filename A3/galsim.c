@@ -25,7 +25,6 @@ typedef struct particle {
 	double y, v_y; // y-position y and y-velocity vy
   double force_x, force_y; // Force exerted on particle
 	double mass;  // particle mass.
-  //double brightness; // particle brightness
 } particle_t;
 
 /**
@@ -138,7 +137,7 @@ int main(int argc, char const *argv[]) {
   double brightness[N];
 
   // Read data
-  if (!readData(particles, brightness, filename, N)) return 0;
+  if (!readData(particles, brightness, filename, N)) return 1;
   //printParticles(particles, N);
 
   // Simulate movement
@@ -224,28 +223,39 @@ int readData(particle_t* __restrict particles,
   // Open file
   FILE* fp = fopen(filename, "r");
 
-// TODO: Check if at end of file? Currently reads a new particle with vals = 0
-
-  if (fp) {
-    // Read file
-    int i;
-    for (i = 0; i < N; i++) {
-      fread(&particles[i].x, sizeof(double), 1, fp);
-      fread(&particles[i].y, sizeof(double), 1, fp);
-      fread(&particles[i].mass, sizeof(double), 1, fp);
-      fread(&particles[i].v_x, sizeof(double), 1, fp);
-      fread(&particles[i].v_y, sizeof(double), 1, fp);
-      fread(&brightness[i], sizeof(double), 1, fp);
-    }
-
-    // Close file
-    fclose(fp);
-
-    return 1;
-  } else {
-    printf("%s\n", "Error reading file: doesn't exist.");
+  // Check file open went ok
+  if (!fp) {
+    printf("%s\n", "Error: couldn't open input file. Is it in directory?");
     return 0;
   }
+
+  // Check file size is as expected
+  fseek(fp, 0L, SEEK_END); // Seek end
+  size_t fileSize = ftell(fp); // Get file size
+  fseek(fp, 0L, SEEK_SET); // Reset seek to start of file
+  if (fileSize != 6*N*sizeof(double)) { // File size not as expected?
+    printf("%s\n", "Error: Input file size is not as expected. Is N correct?");
+    return 0;
+  }
+
+  // Read file
+  int i;
+  for (i = 0; i < N; i++) {
+    fread(&particles[i].x, sizeof(double), 1, fp);
+    fread(&particles[i].y, sizeof(double), 1, fp);
+    fread(&particles[i].mass, sizeof(double), 1, fp);
+    fread(&particles[i].v_x, sizeof(double), 1, fp);
+    fread(&particles[i].v_y, sizeof(double), 1, fp);
+    fread(&brightness[i], sizeof(double), 1, fp);
+  }
+
+  // Close file
+  if (fclose(fp)) {
+    printf("%s\n", "Error: couldn't close input file.");
+    return 0;
+  }
+
+  return 1;
 }
 
 // Show particles graphically
