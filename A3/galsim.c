@@ -15,17 +15,21 @@
 // kan börja med att implementera med en struct och få allting att fungera,
 // sedan jobba på optimeringen.
 // Array of structs AoS eller Struct of Arrays SoA?
+// Denna order är important! Vi använder x, v_x och force, mass ofta
+// efter varandra.
+// brightness i separat array eftersom den inte används
 typedef struct particle {
 	double x, v_x; // x-position x and x-velocity vx
 	double y, v_y; // y-position y and y-velocity vy
-	double mass;  // particle mass.
-  double brightness; // particle brightness
   double force_x, force_y; // Force exerted on particle
+	double mass;  // particle mass.
+  //double brightness; // particle brightness
 } particle_t;
 
 
 // Read input data
 int readData(particle_t* __restrict particles,
+              double* __restrict brightness,
               const char* filename, const int N);
 // Simulate the movement of the particles
 void simulate(particle_t* __restrict particles, const int N,
@@ -40,9 +44,13 @@ inline void updateParticles(particle_t* __restrict particles, const int N,
 // Displays graphically the state of the particles
 void showGraphics(particle_t* __restrict particles);
 // Saves final positions and velocities to result.gal
-void writeOutput(particle_t* __restrict particles, const int N);
+void writeOutput(particle_t* __restrict particles,
+                  double* __restrict brightness,
+                  const int N);
 // Print for debugging. Can choose to print first n particles.
-void printParticles(particle_t* __restrict particles, const int N);
+void printParticles(particle_t* __restrict particles,
+                    double* __restrict brightness,
+                    const int N);
 
 // Main function
 int main(int argc, char const *argv[]) {
@@ -67,9 +75,10 @@ int main(int argc, char const *argv[]) {
 
   // Create array with all particles
   particle_t particles[N]; // Use malloc? N can be large?
+  double brightness[N];
 
   // Read data
-  if (!readData(particles, filename, N)) return 0;
+  if (!readData(particles, brightness, filename, N)) return 0;
   //printParticles(particles, N);
 
   // Simulate movement
@@ -80,7 +89,7 @@ int main(int argc, char const *argv[]) {
   if (graphics) showGraphics(particles);
 
   // Write new state of particles to file
-  writeOutput(particles, N);
+  writeOutput(particles, brightness, N);
 
   return 0;
 }
@@ -149,6 +158,7 @@ inline void updateParticles(particle_t* __restrict particles, const int N,
 
 // Read data from file.
 int readData(particle_t* __restrict particles,
+              double* __restrict brightness,
               const char* filename, const int N) {
 
   // Open file
@@ -165,7 +175,8 @@ int readData(particle_t* __restrict particles,
       fread(&particles[i].mass, sizeof(double), 1, fp);
       fread(&particles[i].v_x, sizeof(double), 1, fp);
       fread(&particles[i].v_y, sizeof(double), 1, fp);
-      fread(&particles[i].brightness, sizeof(double), 1, fp);
+      //fread(&particles[i].brightness, sizeof(double), 1, fp);
+      fread(&brightness[i], sizeof(double), 1, fp);
     }
 
     // Close file
@@ -184,7 +195,9 @@ void showGraphics(particle_t* __restrict particles) {
 }
 
 // Write current state of all particles to file
-void writeOutput(particle_t* __restrict particles, const int N) {
+void writeOutput(particle_t* __restrict particles,
+                  double* __restrict brightness,
+                  const int N) {
 
   // Create file to write
   FILE* fp = fopen("result.gal", "w");
@@ -197,7 +210,8 @@ void writeOutput(particle_t* __restrict particles, const int N) {
     fwrite(&particles[i].mass, sizeof(double), 1, fp);
     fwrite(&particles[i].v_x, sizeof(double), 1, fp);
     fwrite(&particles[i].v_y, sizeof(double), 1, fp);
-    fwrite(&particles[i].brightness, sizeof(double), 1, fp);
+    //fwrite(&particles[i].brightness, sizeof(double), 1, fp);
+    fwrite(&brightness[i], sizeof(double), 1, fp);
   }
 
   // Close file
@@ -205,7 +219,8 @@ void writeOutput(particle_t* __restrict particles, const int N) {
 }
 
 // Print particles (for debugging)
-void printParticles(particle_t* __restrict particles, const int N) {
+void printParticles(particle_t* __restrict particles,
+                    double* __restrict brightness, const int N) {
 
   int i;
   for (i = 0; i < N; i++) {
@@ -215,6 +230,6 @@ void printParticles(particle_t* __restrict particles, const int N) {
     printf("\t(force_x, force_y) = (%.2lf, %.2lf)\n",
             particles[i].force_x, particles[i].force_y);
     printf("\tmass = %lf\n", particles[i].mass);
-    printf("\tbrightness = %lf\n", particles[i].brightness);
+    printf("\tbrightness = %lf\n", brightness[i]);
   }
 }
