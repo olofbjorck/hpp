@@ -1,6 +1,7 @@
 // RUN BY:
 // ./galsim 2 circles_N_2.gal 5 0.00001 1
 // ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
+// time ./galsim 10000 input_data/ellipse_N_10000.gal 100 0.00001 1
 
 // Include libraries
 #include <stdio.h>
@@ -13,6 +14,7 @@
 // allt, än att ha en enda array med massa particle structs. Tänkte att vi
 // kan börja med att implementera med en struct och få allting att fungera,
 // sedan jobba på optimeringen.
+// Array of structs AoS eller Struct of Arrays SoA?
 typedef struct particle {
 	double x, v_x; // x-position x and x-velocity vx
 	double y, v_y; // y-position y and y-velocity vy
@@ -23,23 +25,24 @@ typedef struct particle {
 
 
 // Read input data
-int readData(particle_t* particles, const char* filename, int N);
+int readData(particle_t* __restrict particles,
+              const char* filename, const int N);
 // Simulate the movement of the particles
-void simulate(particle_t* particles, int N,
-              double G, double eps0,
-              int nsteps, double delta_t);
+void simulate(particle_t* __restrict particles, const int N,
+              const double G, const double eps0,
+              const int nsteps, const double delta_t);
 // Calculates plummer spheres force
-inline void calculateForces(particle_t* particles, int N,
-                      double G, double eps0);
+inline void calculateForces(particle_t* __restrict particles, const int N,
+                            const double G, const double eps0);
 // Update the particle states with one time step
-inline void updateParticles(particle_t* particles, int N,
-                      double delta_t);
+inline void updateParticles(particle_t* __restrict particles, const int N,
+                            const double delta_t);
 // Displays graphically the state of the particles
-void showGraphics(particle_t* particles);
+void showGraphics(particle_t* __restrict particles);
 // Saves final positions and velocities to result.gal
-void writeOutput(particle_t* particles, int N);
+void writeOutput(particle_t* __restrict particles, const int N);
 // Print for debugging. Can choose to print first n particles.
-void printParticles(particle_t* particles, int);
+void printParticles(particle_t* __restrict particles, const int N);
 
 // Main function
 int main(int argc, char const *argv[]) {
@@ -83,9 +86,9 @@ int main(int argc, char const *argv[]) {
 }
 
 // Simulate the movement of the particles
-void simulate(particle_t* particles, int N,
-              double G, double eps0,
-              int nsteps, double delta_t) {
+void simulate(particle_t* __restrict particles, const int N,
+              const double G, const double eps0,
+              const int nsteps, const double delta_t) {
 
   int i;
   for (i = 0; i < nsteps; i++) {
@@ -95,7 +98,8 @@ void simulate(particle_t* particles, int N,
 }
 
 // Calculates force exerted on every particle
-void calculateForces(particle_t* particles, int N, double G, double eps0) {
+inline void calculateForces(particle_t* __restrict particles, const int N,
+                            const double G, const double eps0) {
 
   int i, j; // Loop variables
   double r = 0.0, r_x = 0.0, r_y = 0.0; // Vector
@@ -124,8 +128,8 @@ void calculateForces(particle_t* particles, int N, double G, double eps0) {
 }
 
 // Update the particles
-void updateParticles(particle_t* particles, int N,
-                      double delta_t) {
+inline void updateParticles(particle_t* __restrict particles, const int N,
+                            const double delta_t) {
 
   int i; // Loop variable
   double a_x = 0.0, a_y = 0.0; // Acceleration
@@ -144,7 +148,8 @@ void updateParticles(particle_t* particles, int N,
 }
 
 // Read data from file.
-int readData(particle_t* particles, const char* filename, int N) {
+int readData(particle_t* __restrict particles,
+              const char* filename, const int N) {
 
   // Open file
   FILE* fp = fopen(filename, "r");
@@ -174,12 +179,12 @@ int readData(particle_t* particles, const char* filename, int N) {
 }
 
 // Show particles graphically
-void showGraphics(particle_t* particles) {
+void showGraphics(particle_t* __restrict particles) {
 
 }
 
 // Write current state of all particles to file
-void writeOutput(particle_t* particles, int N) {
+void writeOutput(particle_t* __restrict particles, const int N) {
 
   // Create file to write
   FILE* fp = fopen("result.gal", "w");
@@ -200,7 +205,7 @@ void writeOutput(particle_t* particles, int N) {
 }
 
 // Print particles (for debugging)
-void printParticles(particle_t* particles, int N) {
+void printParticles(particle_t* __restrict particles, const int N) {
 
   int i;
   for (i = 0; i < N; i++) {
