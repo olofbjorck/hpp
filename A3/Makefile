@@ -1,17 +1,21 @@
-FILENAME = galsim
-OBJFILES = $(FILENAME).o
-HEADERS = $(FILENAME).h
-EXE = $(FILENAME)
-
 CC = gcc
-CFLAGS = -Wall -g -O3
-LFLAGS = -lm
+CFLAGS = -Wall -O3
+#CFLAGS += -g
+LDFLAGS = -L/opt/X11/lib -lX11 -lm
 
-$(EXE): $(OBJFILES)
-	$(CC) $(OBJFILES) -o $(EXE) $(LFLAGS)
+INCLUDES = -I/opt/X11/include -Igraphics
 
-%.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $^
+galsim: galsim.o graphics.o
+	$(CC) galsim.o graphics.o -o galsim $(LDFLAGS)
+
+galsim.o: galsim.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c galsim.c
+
+graphics.o: graphics/graphics.c graphics/graphics.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c graphics/graphics.c
+
+compare_cal_files: compare_gal_files.c
+	$(CC) -o compare_gal_files compare_gal_files.c -lm
 
 clean:
-	rm -f $(OBJFILES) $(EXE) $(HEADERS).gch
+	rm -f galsim galsim.o graphics.o compare_gal_files
