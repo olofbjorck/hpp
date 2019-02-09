@@ -148,16 +148,15 @@ int main(int argc, char const *argv[]) {
 	// Define some constants
 	const double G = 100.0/N; // Gravitational constant
 	const double eps0 = 0.001; // Plummer sphere constant
-	// delta_t should be 10^-5 = 0.00001 passed as input
 
 	// Graphics
-	// TODO make a struct for graphics params?
 	const unsigned int windowSize = 1000;
 	const float circleRadius = 0.0025f;
 	const float circleColour = 0.0f;
 
 	// Create array with all particles
-	particle_t particles[N]; // Use malloc? N can be large?
+	//particle_t particles[N]; // Use malloc? N can be large?
+	particle_t* particles = (particle_t*)malloc(N * sizeof(particle_t)); // TODO better malloc? array of pointers to structs?
 	double brightness[N];
 
 	// Read data
@@ -179,6 +178,8 @@ int main(int argc, char const *argv[]) {
 	// Write new state of particles to file
 	writeOutput(particles, brightness, N);
 
+	// Free memory
+	free(particles);
 	return 0;
 }
 
@@ -228,8 +229,6 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 		particles[i].force_x = 0.0, particles[i].force_y = 0.0;
 		// Loop
 		for (j = 0; j < N; j++) { // case i==j is no problem as r will be 0.
-			// Checked timings, this is faster than two
-			// for-loops, skipping i==j
 			// Calculate r-vector
 			r_x = particles[i].x - particles[j].x;
 			r_y = particles[i].y - particles[j].y;
