@@ -15,6 +15,9 @@
 #include <math.h>
 #include "graphics.h"
 
+#define BLOCK_SIZE 1
+#define USE_BLOCKING 1
+
 /**
  * Particle struct declaration.
  *
@@ -224,6 +227,48 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 	unsigned int i, j; // Loop variables
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
 	double denom = 0.0; // Denominator
+
+	#if USE_BLOCKING
+
+	// Blocking params
+	// TODO MOVE TO FUNCTION SIMULATE
+	unsigned int tempSize;	// Not const because blockSize may fail
+	if(N % BLOCK_SIZE) {
+		printf("ERROR: N particles not divisible by blocksize. No blocking used");
+		tempSize = 1;
+	} else {
+		tempSize = BLOCK_SIZE;
+	}
+	const unsigned int blockSize = tempSize;	// const for performance
+	unsigned int ii, jj;	// Block iterators
+
+	for(i = 0; i < N; i++) {
+		// Initialize forces
+		particles[i].force_x = 0.0, particles[i].force_y = 0.0;
+	}
+	for(i = 0; i < N; i+=blockSize) {
+		for(j = 0; j < N; j+=blockSize) {
+			for(ii = i; ii < i+blockSize; ii++) {
+				for(jj = j; jj < j+blockSize; jj++) {
+					// Calculate r-vector
+					r_x = particles[ii].x - particles[jj].x;
+					r_y = particles[ii].y - particles[jj].y;
+					r = sqrt(r_x*r_x + r_y*r_y);
+					// Calculate denominator
+					denom = r + eps0;
+					denom = 1/(denom*denom*denom); // 1 msec faster than using /demon below
+					// Calculate force
+					particles[ii].force_x += particles[jj].mass*r_x*denom;
+					particles[ii].force_y += particles[jj].mass*r_y*denom;
+				}
+				particles[ii].force_x *= -G*particles[ii].mass;
+				particles[ii].force_y *= -G*particles[ii].mass;
+			}
+		}
+	}
+
+	#else
+
 	for (i = 0; i < N; i++) {
 		// Initialize forces
 		particles[i].force_x = 0.0, particles[i].force_y = 0.0;
@@ -243,6 +288,8 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 		particles[i].force_x *= -G*particles[i].mass;
 		particles[i].force_y *= -G*particles[i].mass;
 	}
+
+	#endif
 }
 
 // Update the particles
