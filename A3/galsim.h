@@ -72,7 +72,7 @@ static void simulate(particle_t* __restrict particles, const int N,
  */
 static void simulateWithGraphics(particle_t* __restrict particles, const int N,
 		const double G, const double eps0,
-		const int nsteps, const double delta_t, 
+		const int nsteps, const double delta_t,
 		const char* __restrict program, const unsigned int windowSize, 
 		const float circleRadius, const float circleColour,
 		const unsigned int blockSize);
@@ -107,7 +107,7 @@ inline static void updateParticles(particle_t* __restrict particles,
  *
  * @param particles Information about every particle.
  */
-static void showGraphics(particle_t* __restrict particles, const int N, 
+static void showGraphics(particle_t* __restrict particles, const int N,
 		const double circleRadius, const int circleColour);
 
 /**
