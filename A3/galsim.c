@@ -188,7 +188,7 @@ int main(int argc, char const *argv[]) {
 	writeOutput(particles, brightness, N);
 
 	// Free memory
-	free(particles);
+  free(particles);
   free(brightness);
 
   // Success
@@ -196,12 +196,13 @@ int main(int argc, char const *argv[]) {
 }
 
 // Simulate the movement of the particles
-void simulate(particle_t* __restrict particles,
-    const int N,
-		const double G,
-    const double eps0,
-		const int nsteps,
-    const double delta_t) {
+void simulate(
+	particle_t* __restrict particles,
+	const int N,
+	const double G,
+	const double eps0,
+	const int nsteps,
+	const double delta_t) {
 
 
 	unsigned int i;
