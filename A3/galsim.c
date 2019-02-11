@@ -1,7 +1,7 @@
 // RUN BY:
 // ./galsim 2 circles_N_2.gal 5 0.00001 1
 // ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
-// time ./galsim 10000 input_data/ellipse_N_10000.gal 100 0.00001 1
+// time ./galsim 03000 input_data/ellipse_N_03000.gal 100 0.00001 0
 
 /**
  * Simulates galaxy movement in outer space.
