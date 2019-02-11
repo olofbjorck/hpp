@@ -15,9 +15,6 @@
 #include <math.h>
 #include "graphics.h"
 
-#define BLOCK_SIZE 5
-#define USE_BLOCKING 0
-
 /**
  * Particle struct declaration.
  *
@@ -25,7 +22,7 @@
 typedef struct particle {
 	double x, v_x; // x-position x and x-velocity vx
 	double y, v_y; // y-position y and y-velocity vy
-	double force_x, force_y; // Force exerted on particle
+	double a_x, a_y; // Force exerted on particle
 	double mass;  // particle mass.
 } particle_t;
 
@@ -41,9 +38,10 @@ typedef struct particle {
  * @param  N          The total number of particles.
  * @return            Returns 1 if data was read successfully, else 0.
  */
-static int readData(particle_t* __restrict particles,
-		double* __restrict brightness,
-		const char* filename, const int N);
+static int readData(
+  particle_t* __restrict particles,
+  double* __restrict brightness,
+  const char* filename, const int N);
 
 /**
  * Simulates the movement of all the particles in particle_t* particles array.
@@ -58,10 +56,12 @@ static int readData(particle_t* __restrict particles,
  * @param nsteps    Number of timesteps to simulate.
  * @param delta_t   Timestep [seconds].
  */
-static void simulate(particle_t* __restrict particles, const int N,
-		const double G, const double eps0,
-		const int nsteps, const double delta_t,
-		const unsigned int blockSize);
+static void simulate(
+  particle_t* __restrict particles, const int N,
+  const double G,
+  const double eps0,
+  const int nsteps,
+  const double delta_t);
 
 /**
  * Extension of function simulate, showing the movements of the particles
@@ -74,12 +74,17 @@ static void simulate(particle_t* __restrict particles, const int N,
  * @param nsteps    Number of timesteps to simulate.
  * @param delta_t   Timestep [seconds].
  */
-static void simulateWithGraphics(particle_t* __restrict particles, const int N,
-		const double G, const double eps0,
-		const int nsteps, const double delta_t,
-		const char* __restrict program, const unsigned int windowSize,
-		const float circleRadius, const float circleColour,
-		const unsigned int blockSize);
+static void simulateWithGraphics(
+  particle_t* __restrict particles,
+  const int N,
+  const double G,
+  const double eps0,
+  const int nsteps,
+  const double delta_t,
+  const char* __restrict program,
+  const unsigned int windowSize,
+  const float circleRadius,
+  const float circleColour);
 
 /**
  * Calculates and stores the aggregate force exerted on every particle by all
@@ -90,29 +95,23 @@ static void simulateWithGraphics(particle_t* __restrict particles, const int N,
  * @param G         The Newton gravitational constant G.
  * @param eps0      Plummer spheres constant to smooth calculations.
  */
-inline static void calculateForces(particle_t* __restrict particles, const int N,
-		const double G, const double eps0,
-		const unsigned int blockSize);
-
-/**
- * Updates the state of the particles with timestep delta_t. Does not compute
- * any forces; current forces particles.force_x and particles.force_y need
- * to be computed and set before using this function.
- *
- * @param particles Information about every particle.
- * @param N         The total number of particles.
- * @param delta_t   Timestep [seconds].
- */
-inline static void updateParticles(particle_t* __restrict particles,
-		const int N, const double delta_t);
+inline static void updateParticles(
+  particle_t* __restrict particles,
+  const int N,
+  const double G,
+  const double eps0,
+  const double delta_t);
 
 /**
  * Shows the state of the particles graphically.
  *
  * @param particles Information about every particle.
  */
-static void showGraphics(particle_t* __restrict particles, const int N,
-		const double circleRadius, const int circleColour);
+static void showGraphics(
+  particle_t* __restrict particles,
+  const int N,
+  const double circleRadius,
+  const int circleColour);
 
 /**
  * Writes current state of all particles to output file "result.gal".
@@ -121,9 +120,10 @@ static void showGraphics(particle_t* __restrict particles, const int N,
  * @param brightness Array with brightness information about every particle.
  * @param N          The total number of particles.
  */
-static void writeOutput(particle_t* __restrict particles,
-		double* __restrict brightness,
-		const int N);
+static void writeOutput(
+  particle_t* __restrict particles,
+  double* __restrict brightness,
+  const int N);
 
 /*
    static void printParticles(particle_t* __restrict particles,
@@ -167,18 +167,7 @@ int main(int argc, char const *argv[]) {
 		printf("ERROR: Failed to malloc particles");
 		return 1;
 	}
-	double brightness[N];
-
-	// Parameters for blocking loops
-	unsigned int tempSize;	// Not const because blockSize may fail
-	if (N % BLOCK_SIZE) {
-		printf("ERROR: N particles not divisible by blocksize. No blocking used");
-		tempSize = 1;
-		//return;
-	} else {
-		tempSize = BLOCK_SIZE;
-	}
-	const unsigned int blockSize = tempSize;	// const for performance
+	double* brightness = (double*) malloc(N * sizeof(double));
 
 	// Read data
 	if (readData(particles, brightness, filename, N))
@@ -189,42 +178,50 @@ int main(int argc, char const *argv[]) {
 	if(graphics) {
 		// With graphics
 		simulateWithGraphics(particles, N, G, eps0, nsteps, delta_t,
-				program, windowSize, circleRadius, circleColour, blockSize);
+				program, windowSize, circleRadius, circleColour);
 	} else {
 		// Movement only
-		simulate(particles, N, G, eps0, nsteps, delta_t, blockSize);
+		simulate(particles, N, G, eps0, nsteps, delta_t);
 	}
-	//printParticles(particles, N);
 
 	// Write new state of particles to file
 	writeOutput(particles, brightness, N);
 
 	// Free memory
 	free(particles);
+  free(brightness);
+
+  // Success
 	return 0;
 }
 
 // Simulate the movement of the particles
-void simulate(particle_t* __restrict particles, const int N,
-		const double G, const double eps0,
-		const int nsteps, const double delta_t,
-		const unsigned int blockSize) {
+void simulate(particle_t* __restrict particles,
+    const int N,
+		const double G,
+    const double eps0,
+		const int nsteps,
+    const double delta_t) {
 
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		calculateForces(particles, N, G, eps0, blockSize);
-		updateParticles(particles, N, delta_t);
+		updateParticles(particles, N, G, eps0, delta_t);
 	}
 }
 
 // Simulate the movement of the particles and show graphically
-void simulateWithGraphics(particle_t* __restrict particles, const int N,
-		const double G, const double eps0,
-		const int nsteps, const double delta_t,
-		const char* program, const unsigned int windowSize,
-		const float circleRadius, const float circleColour,
-		const unsigned int blockSize) {
+void simulateWithGraphics(
+  particle_t* __restrict particles,
+  const int N,
+  const double G,
+  const double eps0,
+  const int nsteps,
+  const double delta_t,
+  const char* program,
+  const unsigned int windowSize,
+  const float circleRadius,
+  const float circleColour) {
 
 	// Initialize graphics handles
 	InitializeGraphics((char*) program, windowSize, windowSize);
@@ -232,8 +229,7 @@ void simulateWithGraphics(particle_t* __restrict particles, const int N,
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		calculateForces(particles, N, G, eps0, blockSize);
-		updateParticles(particles, N, delta_t);
+		updateParticles(particles, N, G, eps0, delta_t);
 		showGraphics(particles, N, circleRadius, circleColour);
 	}
 
@@ -241,52 +237,21 @@ void simulateWithGraphics(particle_t* __restrict particles, const int N,
 	FlushDisplay();
 	CloseDisplay();
 }
+
 // Calculates force exerted on every particle
-inline void calculateForces(particle_t* __restrict particles, const int N,
-		const double G, const double eps0, const unsigned int blockSize) {
+inline void updateParticles(particle_t* __restrict particles,
+  const int N,
+	const double G,
+  const double eps0,
+  const double delta_t) {
 
 	unsigned int i, j; // Loop variables
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
 	double denom = 0.0; // Denominator
 
-	#if USE_BLOCKING
-
-	unsigned int ii, jj;	// Block iterators
-
-	for(i = 0; i < N; i++) {
-		// Initialize forces
-		particles[i].force_x = 0.0, particles[i].force_y = 0.0;
-	}
-	for(i = 0; i < N; i+=blockSize) {
-		for(j = i+1; j < N; j+=blockSize) {
-			for(ii = i; ii < i+blockSize; ii++) {
-				for(jj = j; jj < j+blockSize; jj++) {
-					// Calculate r-vector
-					r_x = particles[ii].x - particles[jj].x;
-					r_y = particles[ii].y - particles[jj].y;
-					r = sqrt(r_x*r_x + r_y*r_y);
-					// Calculate denominator
-					denom = r + eps0;
-					denom = 1/(denom*denom*denom); // 1 msec faster than using /demon below
-					// Calculate force
-					particles[ii].force_x += particles[jj].mass*r_x*denom;
-					particles[ii].force_y += particles[jj].mass*r_y*denom;
-					particles[jj].force_x -= particles[ii].mass*r_x*denom;
-					particles[jj].force_y -= particles[ii].mass*r_y*denom;
-				}
-			}
-		}
-		for(ii = i; ii < i+blockSize; ii++) {
-			particles[ii].force_x *= -G*particles[ii].mass;
-			particles[ii].force_y *= -G*particles[ii].mass;
-		}
-	}
-
-	#else
-
 	// Initialize forces
 	for (i = 0; i < N; i++) {
-		particles[i].force_x = 0.0, particles[i].force_y = 0.0;
+		particles[i].a_x = 0.0, particles[i].a_y = 0.0;
 	}
 	// Loop
 	for (i = 0; i < N; i++) {
@@ -298,33 +263,18 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 			// Calculate denominator
 			denom = r + eps0;
 			denom = 1/(denom*denom*denom); // 1 msec faster than using /demon below
-			// Calculate force
-			particles[i].force_x += particles[j].mass*r_x*denom;
-			particles[i].force_y += particles[j].mass*r_y*denom;
-			particles[j].force_x -= particles[i].mass*r_x*denom;
-			particles[j].force_y -= particles[i].mass*r_y*denom;
+
+      // Calculate acceleration
+			particles[i].a_x += particles[j].mass*r_x*denom;
+			particles[i].a_y += particles[j].mass*r_y*denom;
+      // Calculate corresponding acceleration for other particle, using
+      // using Newton's third law
+			particles[j].a_x -= particles[i].mass*r_x*denom;
+			particles[j].a_y -= particles[i].mass*r_y*denom;
 		}
-		particles[i].force_x *= -G*particles[i].mass;
-		particles[i].force_y *= -G*particles[i].mass;
-	}
-
-	#endif
-}
-
-// Update the particles
-inline void updateParticles(particle_t* __restrict particles, const int N,
-		const double delta_t) {
-
-	double a_x = 0.0, a_y = 0.0; // Acceleration
-	// Loop over all particles
-	unsigned int i;
-	for (i = 0; i < N; i++) {
-		// Calculate acceleration
-		a_x = particles[i].force_x/particles[i].mass;
-		a_y = particles[i].force_y/particles[i].mass;
 		// Update velocity
-		particles[i].v_x += delta_t*a_x;
-		particles[i].v_y += delta_t*a_y;
+		particles[i].v_x += -G*delta_t*particles[i].a_x;
+		particles[i].v_y += -G*delta_t*particles[i].a_y;
 		// Update position
 		particles[i].x += delta_t*particles[i].v_x;
 		particles[i].y += delta_t*particles[i].v_y;
@@ -409,21 +359,3 @@ void writeOutput(particle_t* __restrict particles,
 	// Close file
 	fclose(fp);
 }
-
-/*
-// Print particles (for debugging)
-void printParticles(particle_t* __restrict particles,
-double* __restrict brightness, const int N) {
-
-unsigned int i;
-for (i = 0; i < N; i++) {
-printf("Particle %d:\n", i+1);
-printf("\t(x, y) = (%.2lf, %.2lf)\n", particles[i].x, particles[i].y);
-printf("\t(vx, vy) = (%.2lf, %.2lf)\n", particles[i].v_x, particles[i].v_y);
-printf("\t(force_x, force_y) = (%.2lf, %.2lf)\n",
-particles[i].force_x, particles[i].force_y);
-printf("\tmass = %lf\n", particles[i].mass);
-printf("\tbrightness = %lf\n", brightness[i]);
-}
-}
-*/
