@@ -3,6 +3,9 @@
 // ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
 // time ./galsim 10000 input_data/ellipse_N_10000.gal 100 0.00001 1
 
+// Till rapporten:
+// time ./galsim 03000 input_data/ellipse_N_03000.gal 100 0.00001 0
+
 #include "galsim.h"
 
 /**
@@ -164,6 +167,7 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 	}
 	// Loop
 	for (i = 0; i < N; i++) {
+		for (j = i + 1; j < N; j++) { // case i==j is no problem as r will be 0.
 			// Calculate r-vector
 			r_x = particles[i].x - particles[j].x;
 			r_y = particles[i].y - particles[j].y;
