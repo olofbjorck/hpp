@@ -14,7 +14,7 @@ galsim: galsim.o graphics.o
 compare_gal_files: compare_gal_files.c
 	$(CC) -o compare_gal_files compare_gal_files.c -lm
 
-galsim.o: galsim.c galsim.h
+galsim.o: galsim.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c galsim.c
 
 graphics.o: graphics/graphics.c graphics/graphics.h
