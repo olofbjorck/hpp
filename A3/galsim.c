@@ -164,7 +164,6 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 	}
 	// Loop
 	for (i = 0; i < N; i++) {
-		for (j = i; j < N; j++) { // case i==j is no problem as r will be 0.
 			// Calculate r-vector
 			r_x = particles[i].x - particles[j].x;
 			r_y = particles[i].y - particles[j].y;
