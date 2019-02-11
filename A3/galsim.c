@@ -39,9 +39,9 @@ typedef struct particle {
  * @return            Returns 1 if data was read successfully, else 0.
  */
 static int readData(
-  particle_t* __restrict particles,
-  double* __restrict brightness,
-  const char* filename, const int N);
+		particle_t* __restrict particles,
+		double* __restrict brightness,
+		const char* filename, const int N);
 
 /**
  * Simulates the movement of all the particles in particle_t* particles array.
@@ -57,11 +57,11 @@ static int readData(
  * @param delta_t   Timestep [seconds].
  */
 static void simulate(
-  particle_t* __restrict particles, const int N,
-  const double G,
-  const double eps0,
-  const int nsteps,
-  const double delta_t);
+		particle_t* __restrict particles, const int N,
+		const double G,
+		const double eps0,
+		const int nsteps,
+		const double delta_t);
 
 /**
  * Extension of function simulate, showing the movements of the particles
@@ -75,16 +75,16 @@ static void simulate(
  * @param delta_t   Timestep [seconds].
  */
 static void simulateWithGraphics(
-  particle_t* __restrict particles,
-  const int N,
-  const double G,
-  const double eps0,
-  const int nsteps,
-  const double delta_t,
-  const char* __restrict program,
-  const unsigned int windowSize,
-  const float circleRadius,
-  const float circleColour);
+		particle_t* __restrict particles,
+		const int N,
+		const double G,
+		const double eps0,
+		const int nsteps,
+		const double delta_t,
+		const char* __restrict program,
+		const unsigned int windowSize,
+		const float circleRadius,
+		const float circleColour);
 
 /**
  * Calculates and stores the aggregate force exerted on every particle by all
@@ -96,11 +96,11 @@ static void simulateWithGraphics(
  * @param eps0      Plummer spheres constant to smooth calculations.
  */
 inline static void updateParticles(
-  particle_t* __restrict particles,
-  const int N,
-  const double G,
-  const double eps0,
-  const double delta_t);
+		particle_t* __restrict particles,
+		const int N,
+		const double G,
+		const double eps0,
+		const double delta_t);
 
 /**
  * Shows the state of the particles graphically.
@@ -108,10 +108,10 @@ inline static void updateParticles(
  * @param particles Information about every particle.
  */
 static void showGraphics(
-  particle_t* __restrict particles,
-  const int N,
-  const double circleRadius,
-  const int circleColour);
+		particle_t* __restrict particles,
+		const int N,
+		const double circleRadius,
+		const int circleColour);
 
 /**
  * Writes current state of all particles to output file "result.gal".
@@ -121,9 +121,9 @@ static void showGraphics(
  * @param N          The total number of particles.
  */
 static void writeOutput(
-  particle_t* __restrict particles,
-  double* __restrict brightness,
-  const int N);
+		particle_t* __restrict particles,
+		double* __restrict brightness,
+		const int N);
 
 /*
    static void printParticles(particle_t* __restrict particles,
@@ -189,19 +189,19 @@ int main(int argc, char const *argv[]) {
 
 	// Free memory
 	free(particles);
-  free(brightness);
+	free(brightness);
 
-  // Success
+	// Success
 	return 0;
 }
 
 // Simulate the movement of the particles
 void simulate(particle_t* __restrict particles,
-    const int N,
+		const int N,
 		const double G,
-    const double eps0,
+		const double eps0,
 		const int nsteps,
-    const double delta_t) {
+		const double delta_t) {
 
 
 	unsigned int i;
@@ -212,16 +212,16 @@ void simulate(particle_t* __restrict particles,
 
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
-  particle_t* __restrict particles,
-  const int N,
-  const double G,
-  const double eps0,
-  const int nsteps,
-  const double delta_t,
-  const char* program,
-  const unsigned int windowSize,
-  const float circleRadius,
-  const float circleColour) {
+		particle_t* __restrict particles,
+		const int N,
+		const double G,
+		const double eps0,
+		const int nsteps,
+		const double delta_t,
+		const char* program,
+		const unsigned int windowSize,
+		const float circleRadius,
+		const float circleColour) {
 
 	// Initialize graphics handles
 	InitializeGraphics((char*) program, windowSize, windowSize);
@@ -240,10 +240,10 @@ void simulateWithGraphics(
 
 // Calculates force exerted on every particle
 inline void updateParticles(particle_t* __restrict particles,
-  const int N,
-	const double G,
-  const double eps0,
-  const double delta_t) {
+		const int N,
+		const double G,
+		const double eps0,
+		const double delta_t) {
 
 	unsigned int i, j; // Loop variables
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
@@ -264,11 +264,11 @@ inline void updateParticles(particle_t* __restrict particles,
 			denom = r + eps0;
 			denom = 1/(denom*denom*denom); // 1 msec faster than using /demon below
 
-      // Calculate acceleration
+			// Calculate acceleration
 			particles[i].a_x += particles[j].mass*r_x*denom;
 			particles[i].a_y += particles[j].mass*r_y*denom;
-      // Calculate corresponding acceleration for other particle, using
-      // using Newton's third law
+			// Calculate corresponding acceleration for other particle, using
+			// using Newton's third law
 			particles[j].a_x -= particles[i].mass*r_x*denom;
 			particles[j].a_y -= particles[i].mass*r_y*denom;
 		}
