@@ -161,7 +161,22 @@ int main(int argc, char const *argv[]) {
 	// Create array with all particles
 	//particle_t particles[N]; // Use malloc? N can be large?
 	particle_t* particles = (particle_t*)malloc(N * sizeof(particle_t)); // TODO better malloc? array of pointers to structs?
+	if(!particles) {
+		printf("ERROR: Failed to malloc particles");
+		return 1;
+	}
 	double brightness[N];
+
+	// Parameters for blocking loops
+	unsigned int tempSize;	// Not const because blockSize may fail
+	if(N % BLOCK_SIZE) {
+		printf("ERROR: N particles not divisible by blocksize. No blocking used");
+		tempSize = 1;
+		return;
+	} else {
+		tempSize = BLOCK_SIZE;
+	}
+	const unsigned int blockSize = tempSize;	// const for performance
 
 	// Read data
 	if (readData(particles, brightness, filename, N))
@@ -172,10 +187,10 @@ int main(int argc, char const *argv[]) {
 	if(graphics) {
 		// With graphics
 		simulateWithGraphics(particles, N, G, eps0, nsteps, delta_t,
-				program, windowSize, circleRadius, circleColour);
+				program, windowSize, circleRadius, circleColour, blockSize);
 	} else {
 		// Movement only
-		simulate(particles, N, G, eps0, nsteps, delta_t);
+		simulate(particles, N, G, eps0, nsteps, delta_t, blockSize);
 	}
 	//printParticles(particles, N);
 
@@ -190,11 +205,13 @@ int main(int argc, char const *argv[]) {
 // Simulate the movement of the particles
 void simulate(particle_t* __restrict particles, const int N,
 		const double G, const double eps0,
-		const int nsteps, const double delta_t) {
+		const int nsteps, const double delta_t,
+		const unsigned int blockSize) {
+
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		calculateForces(particles, N, G, eps0);
+		calculateForces(particles, N, G, eps0, blockSize);
 		updateParticles(particles, N, delta_t);
 	}
 }
@@ -204,7 +221,8 @@ void simulateWithGraphics(particle_t* __restrict particles, const int N,
 		const double G, const double eps0,
 		const int nsteps, const double delta_t,
 		const char* program, const unsigned int windowSize,
-		const float circleRadius, const float circleColour) {
+		const float circleRadius, const float circleColour,
+		const unsigned int blockSize) {
 
 	// Initialize graphics handles
 	InitializeGraphics(program, windowSize, windowSize);
@@ -212,7 +230,7 @@ void simulateWithGraphics(particle_t* __restrict particles, const int N,
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		calculateForces(particles, N, G, eps0);
+		calculateForces(particles, N, G, eps0, blockSize);
 		updateParticles(particles, N, delta_t);
 		showGraphics(particles, N, circleRadius, circleColour);
 	}
@@ -223,7 +241,7 @@ void simulateWithGraphics(particle_t* __restrict particles, const int N,
 }
 // Calculates force exerted on every particle
 inline void calculateForces(particle_t* __restrict particles, const int N,
-		const double G, const double eps0) {
+		const double G, const double eps0, const unsigned int blockSize) {
 
 	unsigned int i, j; // Loop variables
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
@@ -231,16 +249,6 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 
 	#if USE_BLOCKING
 
-	// Blocking params
-	// TODO MOVE TO FUNCTION SIMULATE
-	unsigned int tempSize;	// Not const because blockSize may fail
-	if(N % BLOCK_SIZE) {
-		printf("ERROR: N particles not divisible by blocksize. No blocking used");
-		tempSize = 1;
-	} else {
-		tempSize = BLOCK_SIZE;
-	}
-	const unsigned int blockSize = tempSize;	// const for performance
 	unsigned int ii, jj;	// Block iterators
 
 	for(i = 0; i < N; i++) {
@@ -248,7 +256,7 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 		particles[i].force_x = 0.0, particles[i].force_y = 0.0;
 	}
 	for(i = 0; i < N; i+=blockSize) {
-		for(j = 0; j < N; j+=blockSize) {
+		for(j = i; j < N; j+=blockSize) {
 			for(ii = i; ii < i+blockSize; ii++) {
 				for(jj = j; jj < j+blockSize; jj++) {
 					// Calculate r-vector
@@ -261,20 +269,26 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 					// Calculate force
 					particles[ii].force_x += particles[jj].mass*r_x*denom;
 					particles[ii].force_y += particles[jj].mass*r_y*denom;
+					particles[jj].force_x -= particles[ii].mass*r_x*denom;
+					particles[jj].force_y -= particles[ii].mass*r_y*denom;
 				}
-				particles[ii].force_x *= -G*particles[ii].mass;
-				particles[ii].force_y *= -G*particles[ii].mass;
 			}
+		}
+		for(ii = i; ii < i+blockSize; ii++) {
+			particles[ii].force_x *= -G*particles[ii].mass;
+			particles[ii].force_y *= -G*particles[ii].mass;
 		}
 	}
 
 	#else
 
+	// Initialize forces
 	for (i = 0; i < N; i++) {
-		// Initialize forces
 		particles[i].force_x = 0.0, particles[i].force_y = 0.0;
-		// Loop
-		for (j = 0; j < N; j++) { // case i==j is no problem as r will be 0.
+	}
+	// Loop
+	for (i = 0; i < N; i++) {
+		for (j = i; j < N; j++) { // case i==j is no problem as r will be 0.
 			// Calculate r-vector
 			r_x = particles[i].x - particles[j].x;
 			r_y = particles[i].y - particles[j].y;
@@ -285,6 +299,8 @@ inline void calculateForces(particle_t* __restrict particles, const int N,
 			// Calculate force
 			particles[i].force_x += particles[j].mass*r_x*denom;
 			particles[i].force_y += particles[j].mass*r_y*denom;
+			particles[j].force_x -= particles[i].mass*r_x*denom;
+			particles[j].force_y -= particles[i].mass*r_y*denom;
 		}
 		particles[i].force_x *= -G*particles[i].mass;
 		particles[i].force_y *= -G*particles[i].mass;
