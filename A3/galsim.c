@@ -157,8 +157,8 @@ int main(int argc, char const *argv[]) {
 	const float circleRadius = 0.0025f;
 	const float circleColour = 0.0f;
 
-	// Create array with all particles, initialized to 0
-	particle_t* particles = (particle_t*) calloc(N, sizeof(particle_t)); // TODO better malloc? array of pointers to structs?
+	// Create array with all particles
+	particle_t* particles = (particle_t*) malloc(N * sizeof(particle_t)); // TODO better malloc? array of pointers to structs?
 	if (!particles) {
 		// Program fail, exit
 		printf("ERROR: Failed to malloc particles");
@@ -246,6 +246,12 @@ inline void updateParticles(particle_t* __restrict particles,
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
 	double denom = 0.0; // Denominator
 
+	// Initialize acceleration to 0
+	for (i = 0; i < N; i++) {
+		particles[i].a_x = 0.0;
+		particles[i].a_y = 0.0;
+	}
+
 	// Loop
 	for (i = 0; i < N; i++) {
 		for (j = i + 1; j < N; j++) { // case i==j is no problem as r will be 0.
@@ -274,7 +280,8 @@ inline void updateParticles(particle_t* __restrict particles,
 }
 
 // Read data from file.
-int readData(particle_t* __restrict particles,
+int readData(
+		particle_t* __restrict particles,
 		double* __restrict brightness,
 		const char* filename, const int N) {
 
@@ -299,7 +306,7 @@ int readData(particle_t* __restrict particles,
 	// Read file
 	unsigned int i;
 	for (i = 0; i < N; i++) {
-		if(
+		if (
 				fread(&particles[i].x, sizeof(double), 1, fp) &&
 				fread(&particles[i].y, sizeof(double), 1, fp) &&
 				fread(&particles[i].mass, sizeof(double), 1, fp)  &&
@@ -312,47 +319,53 @@ int readData(particle_t* __restrict particles,
 		}
 	}
 
-		// Close file
-		if (fclose(fp)) {
-			printf("%s\n", "ERROR: Failed to close input file.");
-			return 1;
-		}
-
-		return 0;
+	// Close file
+	if (fclose(fp)) {
+		// Fail
+		printf("%s\n", "ERROR: Failed to close input file.");
+		return 1;
 	}
 
-	// Show particles graphically
-	inline void showGraphics(particle_t* __restrict particles, const int N,
-			const double circleRadius, const int circleColour) {
+	// Success
+	return 0;
+}
 
-		ClearScreen();
-		unsigned int i;
-		for(i = 0; i < N; i++) {
-			DrawCircle(particles[i].x, particles[i].y, 1, 1, circleRadius, circleColour);
-		}
-		Refresh();
-		usleep(3000);	// TODO make variable fps
+// Show particles graphically
+inline void showGraphics(
+		particle_t* __restrict particles,
+		const int N,
+		const double circleRadius,
+		const int circleColour) {
+
+	ClearScreen();
+	unsigned int i;
+	for(i = 0; i < N; i++) {
+		DrawCircle(particles[i].x, particles[i].y, 1, 1, circleRadius, circleColour);
+	}
+	Refresh();
+	usleep(3000);	// TODO make variable fps
+}
+
+// Write current state of all particles to file
+void writeOutput(
+		particle_t* __restrict particles,
+		double* __restrict brightness,
+		const int N) {
+
+	// Create file to write
+	FILE* fp = fopen("result.gal", "w");
+
+	// Write to file
+	unsigned int i;
+	for (i = 0; i < N; i++) {
+		fwrite(&particles[i].x, sizeof(double), 1, fp);
+		fwrite(&particles[i].y, sizeof(double), 1, fp);
+		fwrite(&particles[i].mass, sizeof(double), 1, fp);
+		fwrite(&particles[i].v_x, sizeof(double), 1, fp);
+		fwrite(&particles[i].v_y, sizeof(double), 1, fp);
+		fwrite(&brightness[i], sizeof(double), 1, fp);
 	}
 
-	// Write current state of all particles to file
-	void writeOutput(particle_t* __restrict particles,
-			double* __restrict brightness,
-			const int N) {
-
-		// Create file to write
-		FILE* fp = fopen("result.gal", "w");
-
-		// Write to file
-		unsigned int i;
-		for (i = 0; i < N; i++) {
-			fwrite(&particles[i].x, sizeof(double), 1, fp);
-			fwrite(&particles[i].y, sizeof(double), 1, fp);
-			fwrite(&particles[i].mass, sizeof(double), 1, fp);
-			fwrite(&particles[i].v_x, sizeof(double), 1, fp);
-			fwrite(&particles[i].v_y, sizeof(double), 1, fp);
-			fwrite(&brightness[i], sizeof(double), 1, fp);
-		}
-
-		// Close file
-		fclose(fp);
-	}
+	// Close file
+	fclose(fp);
+}
