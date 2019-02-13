@@ -3,6 +3,9 @@
 // ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
 // time ./galsim 03000 input_data/ellipse_N_03000.gal 100 0.00001 0
 
+// ./galsim 3000 input_data/ellipse_N_03000.gal 100 0.00001 0
+// ./compare_gal_files 3000 result.gal ref_output_data/ellipse_N_03000_after100steps.gal
+
 /**
  * Simulates galaxy movement in outer space.
  *
@@ -125,12 +128,6 @@ static void writeOutput(
 		double* __restrict brightness,
 		const int N);
 
-/*
-   static void printParticles(particle_t* __restrict particles,
-   double* __restrict brightness,
-   const int N);
-   */
-
 /**
  * Main function
  *
@@ -160,10 +157,10 @@ int main(int argc, char const *argv[]) {
 	const float circleRadius = 0.0025f;
 	const float circleColour = 0.0f;
 
-	// Create array with all particles
-	//particle_t particles[N]; // Use malloc? N can be large?
-	particle_t* particles = (particle_t*) malloc(N * sizeof(particle_t)); // TODO better malloc? array of pointers to structs?
+	// Create array with all particles, initialized to 0
+	particle_t* particles = (particle_t*) calloc(N, sizeof(particle_t)); // TODO better malloc? array of pointers to structs?
 	if (!particles) {
+		// Program fail, exit
 		printf("ERROR: Failed to malloc particles");
 		return 1;
 	}
@@ -172,12 +169,12 @@ int main(int argc, char const *argv[]) {
 	// Read data
 	if (readData(particles, brightness, filename, N))
 		return 1;
-	//printParticles(particles, N);
 
 	// Simulate
-	if(graphics) {
+	if (graphics) {
 		// With graphics
-		simulateWithGraphics(particles, N, G, eps0, nsteps, delta_t,
+		simulateWithGraphics(
+				particles, N, G, eps0, nsteps, delta_t,
 				program, windowSize, circleRadius, circleColour);
 	} else {
 		// Movement only
@@ -196,13 +193,13 @@ int main(int argc, char const *argv[]) {
 }
 
 // Simulate the movement of the particles
-void simulate(particle_t* __restrict particles,
+void simulate(
+		particle_t* __restrict particles,
 		const int N,
 		const double G,
 		const double eps0,
 		const int nsteps,
 		const double delta_t) {
-
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
@@ -249,10 +246,6 @@ inline void updateParticles(particle_t* __restrict particles,
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
 	double denom = 0.0; // Denominator
 
-	// Initialize forces
-	for (i = 0; i < N; i++) {
-		particles[i].a_x = 0.0, particles[i].a_y = 0.0;
-	}
 	// Loop
 	for (i = 0; i < N; i++) {
 		for (j = i + 1; j < N; j++) { // case i==j is no problem as r will be 0.
@@ -262,13 +255,12 @@ inline void updateParticles(particle_t* __restrict particles,
 			r = sqrt(r_x*r_x + r_y*r_y);
 			// Calculate denominator
 			denom = r + eps0;
-			denom = 1/(denom*denom*denom); // 1 msec faster than using /demon below
-
-			// Calculate acceleration
+			denom = 1/(denom*denom*denom); // 1 msec faster than using /denom below
+			// Calculate acceleration (a_x, a_y == 0 at start due to calloc)
 			particles[i].a_x += particles[j].mass*r_x*denom;
 			particles[i].a_y += particles[j].mass*r_y*denom;
 			// Calculate corresponding acceleration for other particle, using
-			// using Newton's third law
+			// Newton's third law
 			particles[j].a_x -= particles[i].mass*r_x*denom;
 			particles[j].a_y -= particles[i].mass*r_y*denom;
 		}
