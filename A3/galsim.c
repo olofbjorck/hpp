@@ -283,7 +283,7 @@ int readData(particle_t* __restrict particles,
 
 	// Check file open went ok
 	if (!fp) {
-		printf("%s\n", "Error: couldn't open input file. Is it in directory?");
+		printf("%s\n", "ERROR: Failed to open input file. Is it in directory?");
 		return 1;
 	}
 
@@ -292,62 +292,67 @@ int readData(particle_t* __restrict particles,
 	size_t fileSize = ftell(fp); // Get file size
 	fseek(fp, 0L, SEEK_SET); // Reset seek to start of file
 	if (fileSize != 6*N*sizeof(double)) { // File size not as expected?
-		printf("%s\n", "Error: Input file size is not as expected. Is N correct?");
+		printf("%s\n", "ERROR: Input file size is not as expected. Is N correct?");
 		return 1;
 	}
 
 	// Read file
 	unsigned int i;
 	for (i = 0; i < N; i++) {
-		fread(&particles[i].x, sizeof(double), 1, fp);
-		fread(&particles[i].y, sizeof(double), 1, fp);
-		fread(&particles[i].mass, sizeof(double), 1, fp);
-		fread(&particles[i].v_x, sizeof(double), 1, fp);
-		fread(&particles[i].v_y, sizeof(double), 1, fp);
-		fread(&brightness[i], sizeof(double), 1, fp);
+		if(
+				fread(&particles[i].x, sizeof(double), 1, fp) &&
+				fread(&particles[i].y, sizeof(double), 1, fp) &&
+				fread(&particles[i].mass, sizeof(double), 1, fp)  &&
+				fread(&particles[i].v_x, sizeof(double), 1, fp)  &&
+				fread(&particles[i].v_y, sizeof(double), 1, fp)  &&
+				fread(&brightness[i], sizeof(double), 1, fp)) {
+			// Do nothing
+		} else {
+			printf("ERROR: Failed to read particle %d from input file\n", i);
+		}
 	}
 
-	// Close file
-	if (fclose(fp)) {
-		printf("%s\n", "Error: couldn't close input file.");
-		return 1;
+		// Close file
+		if (fclose(fp)) {
+			printf("%s\n", "ERROR: Failed to close input file.");
+			return 1;
+		}
+
+		return 0;
 	}
 
-	return 0;
-}
+	// Show particles graphically
+	inline void showGraphics(particle_t* __restrict particles, const int N,
+			const double circleRadius, const int circleColour) {
 
-// Show particles graphically
-inline void showGraphics(particle_t* __restrict particles, const int N,
-		const double circleRadius, const int circleColour) {
-
-	ClearScreen();
-	unsigned int i;
-	for(i = 0; i < N; i++) {
-		DrawCircle(particles[i].x, particles[i].y, 1, 1, circleRadius, circleColour);
-	}
-	Refresh();
-	usleep(3000);	// TODO make variable fps
-}
-
-// Write current state of all particles to file
-void writeOutput(particle_t* __restrict particles,
-		double* __restrict brightness,
-		const int N) {
-
-	// Create file to write
-	FILE* fp = fopen("result.gal", "w");
-
-	// Write to file
-	unsigned int i;
-	for (i = 0; i < N; i++) {
-		fwrite(&particles[i].x, sizeof(double), 1, fp);
-		fwrite(&particles[i].y, sizeof(double), 1, fp);
-		fwrite(&particles[i].mass, sizeof(double), 1, fp);
-		fwrite(&particles[i].v_x, sizeof(double), 1, fp);
-		fwrite(&particles[i].v_y, sizeof(double), 1, fp);
-		fwrite(&brightness[i], sizeof(double), 1, fp);
+		ClearScreen();
+		unsigned int i;
+		for(i = 0; i < N; i++) {
+			DrawCircle(particles[i].x, particles[i].y, 1, 1, circleRadius, circleColour);
+		}
+		Refresh();
+		usleep(3000);	// TODO make variable fps
 	}
 
-	// Close file
-	fclose(fp);
-}
+	// Write current state of all particles to file
+	void writeOutput(particle_t* __restrict particles,
+			double* __restrict brightness,
+			const int N) {
+
+		// Create file to write
+		FILE* fp = fopen("result.gal", "w");
+
+		// Write to file
+		unsigned int i;
+		for (i = 0; i < N; i++) {
+			fwrite(&particles[i].x, sizeof(double), 1, fp);
+			fwrite(&particles[i].y, sizeof(double), 1, fp);
+			fwrite(&particles[i].mass, sizeof(double), 1, fp);
+			fwrite(&particles[i].v_x, sizeof(double), 1, fp);
+			fwrite(&particles[i].v_y, sizeof(double), 1, fp);
+			fwrite(&brightness[i], sizeof(double), 1, fp);
+		}
+
+		// Close file
+		fclose(fp);
+	}
