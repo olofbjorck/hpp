@@ -1,10 +1,10 @@
 // RUN BY:
-// ./galsim 2 circles_N_2.gal 5 0.00001 1
-// ./galsim 10 ellipse_N_00010.gal 5 0.00001 1
-// time ./galsim 03000 input_data/ellipse_N_03000.gal 100 0.00001 0
+// time ./galsim 03000 ../input_data/ellipse_N_03000.gal 100 0.00001 0
 
-// ./galsim 3000 input_data/ellipse_N_03000.gal 100 0.00001 0
-// ./compare_gal_files 3000 result.gal ref_output_data/ellipse_N_03000_after100steps.gal
+
+// REQUIRES PRE-COMPILATION OF compare_gal_files.c: REMEMBER TO REMOVE BEFORE HANDIN
+// ./galsim 3000 ../input_data/ellipse_N_03000.gal 100 0.00001 0
+// ../compare_gal_files/compare_gal_files 3000 result.gal ../ref_output_data/ellipse_N_03000_after100steps.gal
 
 /**
  * Simulates galaxy movement in outer space.
@@ -123,7 +123,7 @@ static void showGraphics(
  * @param brightness Array with brightness information about every particle.
  * @param N          The total number of particles.
  */
-static void writeOutput(
+static int writeOutput(
 		particle_t* __restrict particles,
 		double* __restrict brightness,
 		const int N);
@@ -187,7 +187,8 @@ int main(int argc, char const *argv[]) {
 	}
 
 	// Write new state of particles to file
-	writeOutput(particles, brightness, N);
+	if (writeOutput(particles, brightness, N))
+		return 1;
 
 	// Free memory
 	free(particles);
@@ -343,6 +344,7 @@ int readData(
 			// Do nothing
 		} else {
 			printf("ERROR: Failed to read particle %d from input file\n", i);
+			return 1;
 		}
 	}
 
@@ -374,7 +376,7 @@ inline void showGraphics(
 }
 
 // Write current state of all particles to file
-void writeOutput(
+int writeOutput(
 		particle_t* __restrict particles,
 		double* __restrict brightness,
 		const int N) {
@@ -382,17 +384,36 @@ void writeOutput(
 	// Create file to write
 	FILE* fp = fopen("result.gal", "w");
 
+	// Check file creation went ok
+	if (!fp) {
+		printf("%s\n", "ERROR: Failed to create output file");
+		return 1;
+	}
+
 	// Write to file
 	unsigned int i;
 	for (i = 0; i < N; i++) {
-		fwrite(&particles[i].x, sizeof(double), 1, fp);
-		fwrite(&particles[i].y, sizeof(double), 1, fp);
-		fwrite(&particles[i].mass, sizeof(double), 1, fp);
-		fwrite(&particles[i].v_x, sizeof(double), 1, fp);
-		fwrite(&particles[i].v_y, sizeof(double), 1, fp);
-		fwrite(&brightness[i], sizeof(double), 1, fp);
+		if (
+				fwrite(&particles[i].x, sizeof(double), 1, fp) &&
+				fwrite(&particles[i].y, sizeof(double), 1, fp) &&
+				fwrite(&particles[i].mass, sizeof(double), 1, fp)  &&
+				fwrite(&particles[i].v_x, sizeof(double), 1, fp)  &&
+				fwrite(&particles[i].v_y, sizeof(double), 1, fp)  &&
+				fwrite(&brightness[i], sizeof(double), 1, fp)) {
+			// Do nothing
+		} else {
+			printf("ERROR: Failed to read particle %d from input file\n", i);
+			return 1;
+		}
 	}
 
 	// Close file
-	fclose(fp);
+	if (fclose(fp)) {
+		// Fail
+		printf("%s\n", "ERROR: Failed to close output file.");
+		return 1;
+	}
+
+	// Success
+	return 0;
 }
