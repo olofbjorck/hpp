@@ -1,9 +1,9 @@
 // RUN BY:
-// time ./galsim 03000 ../input_data/ellipse_N_03000.gal 100 0.00001 0
+// time ./galsim 03000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
 
 
 // REQUIRES PRE-COMPILATION OF compare_gal_files.c: REMEMBER TO REMOVE BEFORE HANDIN
-// ./galsim 3000 ../input_data/ellipse_N_03000.gal 100 0.00001 0
+// ./galsim 3000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
 // ../compare_gal_files/compare_gal_files 3000 result.gal ../ref_output_data/ellipse_N_03000_after100steps.gal
 
 /**
@@ -135,8 +135,8 @@ static int writeOutput(
 int main(int argc, char const *argv[]) {
 
 	// Check proper number of input arguments
-	if (argc != 6) {
-		printf("%s\n", "Input error: Expected 5 input arguments");
+	if (argc != 7) {
+		printf("%s\n", "Input error: Expected 6 input arguments");
 		return 1;
 	}
 
@@ -151,7 +151,8 @@ int main(int argc, char const *argv[]) {
 	const char* filename = argv[2]; // Filename
 	const int nsteps = atoi(argv[3]); // Nr of filesteps
 	const double delta_t = atof(argv[4]); // Timestep
-	const int graphics = atoi(argv[5]); // Graphics on/off as 1/0
+	const double theta_max = atof(argv[5]);
+	const int graphics = atoi(argv[6]); // Graphics on/off as 1/0
 
 	// Define some constants
 	const double G = 100.0/N; // Gravitational constant
@@ -209,7 +210,10 @@ void simulate(
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		updateParticles(particles, N, G, eps0, delta_t);
+		//updateParticles(particles, N, G, eps0, delta_t);
+		quadtree = buildQuadtree(particles);
+
+
 	}
 }
 
@@ -402,7 +406,7 @@ int writeOutput(
 				fwrite(&brightness[i], sizeof(double), 1, fp)) {
 			// Do nothing
 		} else {
-			printf("ERROR: Failed to read particle %d from input file\n", i);
+			printf("ERROR: Failed to write particle %d to output file\n", i);
 			return 1;
 		}
 	}
