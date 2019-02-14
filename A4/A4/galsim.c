@@ -30,6 +30,29 @@ typedef struct particle {
 } particle_t;
 
 /**
+ * Quadtree node struct declaration.
+ *
+ */
+// Tänker att vi börjar med en stor, ful, och enkel node så kan vi
+// slimma den sen när vi optimerar
+typedef struct node {
+	double centerOfMass_x; // Center of mass x-value
+	double centerOfMass_y; // Center of mass y-value
+	double mass; // Mass of the node
+
+	double x; // Center x-value
+	double y; // Center y-value
+	double side; // Side of the node quadrant
+	//node_t* parent; // Parent node redundant?
+	node_t* childNorthWest; // Upper left quadrant child
+	node_t* childNorthEast; // Upper right quadrant child
+	node_t* childSouthWest; // Lower left quadrant child
+	node_t* childSouthEast; // Lower right quadrant child
+
+	unsigned int filled; // Are there any particles in this node or not?
+} node_t;
+
+/**
  * Reads galaxy data from input file "filename" into particle_t* array
  * particles. Galaxy brightness is stored in separate array double* brightness
  * for speed as brightness isn't used in calculations. Returns 0 if data was
@@ -158,7 +181,7 @@ int main(int argc, char const *argv[]) {
 	const double G = 100.0/N; // Gravitational constant
 	const double eps0 = 0.001; // Plummer sphere constant
 
-	// Graphics
+	// Graphics variables
 	const unsigned int windowSize = 1000;
 	const float circleRadius = 0.0025f;
 	const float circleColour = 0.0f;
@@ -171,6 +194,9 @@ int main(int argc, char const *argv[]) {
 		return 1;
 	}
 	double* brightness = (double*) malloc(N * sizeof(double));
+
+	// Initialize quadtree root
+	node_t root;
 
 	// Read data
 	if (readData(particles, brightness, filename, N))
@@ -211,10 +237,57 @@ void simulate(
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
 		//updateParticles(particles, N, G, eps0, delta_t);
-		quadtree = buildQuadtree(particles);
-
-
+		//buildQuadtree(particles, root);
+		//computeMasses(particles, root);
+		//computeForces(particles, root);
 	}
+}
+
+void buildQuadtree(particle_t* particles, int N, node_t root) {
+
+	unsigned int i;
+	for (i = 0; i < N; i++) {
+		push(particles[i], root);
+	}
+}
+
+void push(particle_t particle, node_t node) {
+
+	if (node.filled) { // Node already occupied?
+		if (node.hasChildren) { // Node has children?
+			place(particle, node);
+		} else { // Node has no children, subdivide and then place
+			subdivide(node);
+			push (node.particle, node); // place particle that currently occupies node
+			place(particle, node);
+		}
+	} else { // Node isn't occupied
+		node.filled = 1;
+		node.mass = particle.mass;
+	}
+}
+
+void place(particle_t particle, node_t node) {
+	if (particle.x < node.x) {
+		if (particle.y < node.y) {
+			push(particle, node.childSouthWest);
+		} else {
+			push(particle, node.childNorthWest);
+		}
+	} else {
+		if (particle.y < node.y) {
+			push(particle, node.childSouthEast);
+		} else {
+			push(particle, node.childNorthEast);
+		}
+	}
+}
+
+void subdivide(node_t node) {
+	node.childNorthWest = (node_t*) malloc(sizeof(node_t));
+	node.childNorthEast = (node_t*) malloc(sizeof(node_t));
+	node.childSouthWest = (node_t*) malloc(sizeof(node_t));
+	node.childSouthEast = (node_t*) malloc(sizeof(node_t));
 }
 
 // Simulate the movement of the particles and show graphically
