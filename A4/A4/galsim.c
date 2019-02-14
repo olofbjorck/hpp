@@ -258,7 +258,7 @@ void push(particle_t particle, node_t node) {
 			place(particle, node);
 		} else { // Node has no children, subdivide and then place
 			subdivide(node);
-			push (node.particle, node); // place particle that currently occupies node
+			push(node.particle, node); // place particle that currently occupies node
 			place(particle, node);
 		}
 	} else { // Node isn't occupied
@@ -268,6 +268,7 @@ void push(particle_t particle, node_t node) {
 }
 
 void place(particle_t particle, node_t node) {
+
 	if (particle.x < node.x) {
 		if (particle.y < node.y) {
 			push(particle, node.childSouthWest);
@@ -284,6 +285,7 @@ void place(particle_t particle, node_t node) {
 }
 
 void subdivide(node_t node) {
+
 	node.childNorthWest = (node_t*) malloc(sizeof(node_t));
 	node.childNorthEast = (node_t*) malloc(sizeof(node_t));
 	node.childSouthWest = (node_t*) malloc(sizeof(node_t));
