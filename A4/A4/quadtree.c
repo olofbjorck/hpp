@@ -29,15 +29,16 @@ void push(particle_t particle, node_t node) {
 int insert(particle_t* particle, node_t* node) {
 
 	// NULL pointer
-	if(node) {
-		// Is the node already occupied?
-		if(node->filled) {
-
-		} else {
-
-		}
-	} else {
+	if(!node) {
 		return 1;
+	}
+
+	// Node contains particles 
+	if(node->filled) {
+		
+	// else: Node isn't occupied
+	} else {
+		node->filled++;
 	}
 
 

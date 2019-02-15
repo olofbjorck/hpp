@@ -14,6 +14,7 @@
 // Tänker att vi börjar med en stor, ful, och enkel node så kan vi
 // slimma den sen när vi optimerar
 typedef struct node {
+	particle_t* particle;	// Particle in leaf
 	double centerOfMass_x; // Center of mass x-value
 	double centerOfMass_y; // Center of mass y-value
 	double mass; // Mass of the node
