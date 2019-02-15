@@ -19,6 +19,11 @@ typedef struct node {
 	double centerOfMass_y; // Center of mass y-value
 	double mass; // Mass of the node
 
+	double topBorder;
+	double botBorder;
+	double leftBorder;
+	double rightBorder;
+
 	double x; // Center x-value
 	double y; // Center y-value
 	double side; // Side of the node quadrant
@@ -49,11 +54,4 @@ void buildQuadTree(particle_t* particles, int N, node_t* root);
  * @param node		Node of quatree
  * @return 			Returns 0 if insert was successful, 1 otherwise
  */
-int insert(particle_t* particle, node_t* node);
-
-/**
- * Subdivides a quadtree node into four subnodes
- *
- * @param node	Quadtree node to subdivide
- */
-void subdivide(node_t* node);
+node_t* insert(particle_t* particle, node_t* node);

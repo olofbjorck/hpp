@@ -26,46 +26,47 @@ void push(particle_t particle, node_t node) {
 }
 */
 
-int insert(particle_t* particle, node_t* node) {
+node_t* insert(particle_t* particle, node_t* node) {
 
-	// NULL pointer
+	// NULL node - make a leaf and add particle
 	if(!node) {
 		return 1;
 	}
 
-	// Node contains particles 
-	if(node->filled) {
-		
-	// else: Node isn't occupied
-	} else {
-		node->filled++;
-	}
+	// Node already contains a particle - is a leaf 
+	if(node->particle) {
+		particle_t* tempParticle = node->particle;
+		node->particle = NULL;
 
+		if(particle->x < node->rightBorder && particle->x >= (node->leftBorder - node->rightBorder)/2.0) {
+			// Indicates R.H. side
+			if(particle->y < node->topBorder && particle->y >= (node->topBorder - node->botBorder)/2.0) {
+				// Indicates top part
+				if(node->childNorthWest) {
+					// ???
+				} else {
+				}
+			} else {
+				// Indicates bottom part
 
+			}
 
-
-
-	/*
-	if (particle.x < node.x) {
-		if (particle.y < node.y) {
-			push(particle, node.childSouthWest);
 		} else {
-			push(particle, node.childNorthWest);
+			// Indicates L.H. side
+			if(particle->y < node->topBorder && particle->y >= (node->topBorder - node->botBorder)/2.0) {
+				// Indicates top part
+				
+			} else {
+				// Indicates bottom part
+
+			}
+
+
 		}
+
+	// else: Make node a leaf
+	// Add particle to node
 	} else {
-		if (particle.y < node.y) {
-			push(particle, node.childSouthEast);
-		} else {
-			push(particle, node.childNorthEast);
-		}
+		node->particle = particle;
 	}
-*/
-}
-
-void subdivide(node_t* node) {
-
-	node->childNorthWest = (node_t*) malloc(sizeof(node_t));
-	node->childNorthEast = (node_t*) malloc(sizeof(node_t));
-	node->childSouthWest = (node_t*) malloc(sizeof(node_t));
-	node->childSouthEast = (node_t*) malloc(sizeof(node_t));
 }
