@@ -19,23 +19,15 @@ typedef struct node {
 	double centerOfMass_y; // Center of mass y-value
 	double mass; // Mass of the node
 
-	double topBorder;
-	double botBorder;
-	double leftBorder;
-	double rightBorder;
+	double topBorder; // y-value
+	double botBorder; // y-value
+	double leftBorder; // x-value
+	double rightBorder; // x-value
 
-	double x; // Center x-value
-	double y; // Center y-value
-	double side; // Side of the node quadrant
-	// Cannot refer to typedef within itself, use struct
-	//struct node* parent; // Parent node redundant?
 	struct node* childNorthWest; // Upper left quadrant child
 	struct node* childNorthEast; // Upper right quadrant child
 	struct node* childSouthWest; // Lower left quadrant child
 	struct node* childSouthEast; // Lower right quadrant child
-
-	unsigned int filled; // Are there any particles in this node or not?
-	unsigned int hasChildren;	// Does this node have any subnodes?
 } node_t;
 
 /**
@@ -54,4 +46,22 @@ void buildQuadTree(particle_t* particles, int N, node_t* root);
  * @param node		Node of quatree
  * @return 			Returns 0 if insert was successful, 1 otherwise
  */
-node_t* insert(particle_t* particle, node_t* node);
+//node_t* insert(particle_t* particle, node_t* node);
+void insert(particle_t* particle, node_t* node);
+
+/**
+ * Subdivides this node (makes it an interior node) by giving it children.
+ *
+ * @param node Node of quadtree
+ */
+void subdivide(node_t* node);
+
+/**
+ * Finds the child of @param node where @param particle shall be inserted.
+ *
+ * @param  particle Particle to insert
+ * @param  node     Node of quadtree
+ *
+ * @return          A child of @param node where @param particle belongs
+ */
+node_t* findCorrectChildForParticle(particle_t* particle, node_t* node);

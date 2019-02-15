@@ -65,7 +65,7 @@ int main(int argc, char const *argv[]) {
 	}
 
 	// Initialize quadtree root
-	node_t root;
+	node_t* root = (node_t*) malloc(sizeof(node_t));
 
 	// Read data
 	if (readData(particles, brightness, filename, N))
@@ -89,6 +89,7 @@ int main(int argc, char const *argv[]) {
 	// Free memory
 	free(particles);
 	free(brightness);
+	free(root);
 
 	// Success
 	return 0;
