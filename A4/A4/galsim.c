@@ -1,6 +1,7 @@
 #include "galsim.h"
 
 // Simulate the movement of the particles
+/*
 void simulate(
 		particle_t* __restrict particles,
 		const int N,
@@ -12,11 +13,11 @@ void simulate(
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
 		//updateParticles(particles, N, G, eps0, delta_t);
-		//buildQuadtree(particles, root);
+		buildQuadtree(particles, root);
 		//computeMasses(particles, root);
 		//computeForces(particles, root);
 	}
-}
+}*/
 
 
 // Simulate the movement of the particles and show graphically

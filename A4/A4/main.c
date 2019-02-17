@@ -65,9 +65,11 @@ int main(int argc, char const *argv[]) {
 	}
 
 	// Initialize quadtree root
+	printf("%s\n", "Allocating root");
 	node_t* root = (node_t*) malloc(sizeof(node_t));
 
 	// Read data
+	printf("%s\n", "Reading data");
 	if (readData(particles, brightness, filename, N))
 		return 1;
 
@@ -79,7 +81,9 @@ int main(int argc, char const *argv[]) {
 				program, windowSize, circleRadius, circleColour);
 	} else {
 		// Movement only
-		simulate(particles, N, G, eps0, nsteps, delta_t);
+		//simulate(particles, N, G, eps0, nsteps, delta_t);
+		printf("%s\n", "Building quadtree");
+		buildQuadtree(particles, root);
 	}
 
 	// Write new state of particles to file
@@ -89,6 +93,7 @@ int main(int argc, char const *argv[]) {
 	// Free memory
 	free(particles);
 	free(brightness);
+	freeQuadTree(root);
 	free(root);
 
 	// Success

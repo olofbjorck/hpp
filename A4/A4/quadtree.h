@@ -65,3 +65,17 @@ void subdivide(node_t* node);
  * @return          A child of @param node where @param particle belongs
  */
 node_t* findCorrectChildForParticle(particle_t* particle, node_t* node);
+
+/**
+ * Prints the quadtree for easier debugging
+ *
+ * @param node Node of quadtree
+ */
+void printQuadTree(node_t* node);
+
+/**
+ * Frees all nodes except the root of the quadtree.
+ *
+ * @param node Node of quadtree
+ */
+void freeQuadTree(node_t* node);
