@@ -5,29 +5,8 @@
  */
 
 #pragma once
+#include "modules.h"
 #include "galsim.h"
-
-/**
- * Quadtree node struct declaration.
- *
- */
-// Tänker att vi börjar med en stor, ful, och enkel node så kan vi
-// slimma den sen när vi optimerar
-typedef struct node {
-	particle_t* particle;	// Particle in leaf
-	double centerOfMass_x; // Center of mass x-value
-	double centerOfMass_y; // Center of mass y-value
-	double mass; // Mass of the node
-
-	double xCenter;
-	double yCenter;
-	double sideHalf;
-
-	struct node* childNorthWest; // Upper left quadrant child
-	struct node* childNorthEast; // Upper right quadrant child
-	struct node* childSouthWest; // Lower left quadrant child
-	struct node* childSouthEast; // Lower right quadrant child
-} node_t;
 
 /**
  * Builds a quadtree of size N from a root node, and fills it with particles
@@ -91,3 +70,6 @@ void freeQuadtree(node_t* node);
 void initialize(
 		node_t* node,
 		double xCenter, double yCenter, double sideHalf);
+
+void printQuadtree(node_t* node);
+void freeQuadtree(node_t* node);

@@ -20,6 +20,8 @@ void simulate(
 }*/
 
 
+
+
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
 		particle_t* __restrict particles,
@@ -70,4 +72,9 @@ inline void showGraphics(
 	}
 	Refresh();
 	usleep(3000);	// TODO make variable fps
+}
+
+extern void updateTreeForces(particle_t* particle, ) {
+
+
 }

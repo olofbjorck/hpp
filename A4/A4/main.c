@@ -1,6 +1,8 @@
 // RUN BY:
 // time ./galsim 03000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
 
+// ./galsim 2 ../input_data/circles_N_2.gal 100 0.00001 0.1 0
+
 
 // REQUIRES PRE-COMPILATION OF compare_gal_files.c: REMEMBER TO REMOVE BEFORE HANDIN
 // ./galsim 3000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
@@ -84,7 +86,9 @@ int main(int argc, char const *argv[]) {
 		//simulate(particles, N, G, eps0, nsteps, delta_t);
 		printf("%s\n", "Building quadtree");
 		buildQuadtree(particles, N, root);
-		printQuadtree(root);
+		computeCenterOfMass(root);
+		computeForces(particles, N, root);
+		printf("Root mass = %lf\n", root->mass);
 	}
 
 	// Write new state of particles to file

@@ -17,7 +17,7 @@ io.o: io.c io.h
 quadtree.o: quadtree.c quadtree.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c quadtree.c
 
-main.o: main.c
+main.o: main.c modules.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c main.c
 
 graphics.o: graphics/graphics.c graphics/graphics.h

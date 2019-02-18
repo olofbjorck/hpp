@@ -5,6 +5,7 @@
  */
 
 #pragma once
+#include "modules.h"
 #include "graphics.h"
 #include <math.h>
 
@@ -12,12 +13,7 @@
  * Particle struct declaration.
  *
  */
-typedef struct particle {
-	double x, v_x; // x-position x and x-velocity vx
-	double y, v_y; // y-position y and y-velocity vy
-	double a_x, a_y; // Force exerted on particle
-	double mass;  // particle mass.
-} particle_t;
+
 
 /**
  * Simulates the movement of all the particles in particle_t* particles array.
@@ -80,37 +76,18 @@ inline void updateParticles(particle_t* __restrict particles,
 	unsigned int i, j; // Loop iterators
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
 	double denom = 0.0; // Denominator
+	double theta;
 
-	// Loop for first particle and initialize acceleration to 0.0
-	particles[0].a_x = 0.0;
-	particles[0].a_y = 0.0;
-	for (j = 1; j < N; j++) {
-		particles[j].a_x = 0.0;
-		particles[j].a_y = 0.0;
-		// Calculate r-vector
-		r_x = particles[0].x - particles[j].x;
-		r_y = particles[0].y - particles[j].y;
-		r = sqrt(r_x*r_x + r_y*r_y);
-		// Calculate denominator
-		denom = r + eps0;
-		denom = 1/(denom*denom*denom); // 1 msec faster than using /denom below
-		// Calculate acceleration (a_x, a_y == 0 at start due to calloc)
-		particles[0].a_x += particles[j].mass*r_x*denom;
-		particles[0].a_y += particles[j].mass*r_y*denom;
-		// Calculate corresponding acceleration for other particle, using
-		// Newton's third law
-		particles[j].a_x -= particles[0].mass*r_x*denom;
-		particles[j].a_y -= particles[0].mass*r_y*denom;
+	for (i = 0; i < N; i++) {
+		particles[i].a_x = 0.0;
+		particles[i].a_y = 0.0;
 	}
-	// Update velocity
-	particles[0].v_x += -G*delta_t*particles[0].a_x;
-	particles[0].v_y += -G*delta_t*particles[0].a_y;
-	// Update position
-	particles[0].x += delta_t*particles[0].v_x;
-	particles[0].y += delta_t*particles[0].v_y;
 
 	// Loop remaining particles, assuming acceleration is properly initialized
-	for (i = 1; i < N; i++) {
+	for (i = 0; i < N; i++) {
+		getLeaf();
+		compareWithSiblings();
+
 		for (j = i + 1; j < N; j++) {
 			// Calculate r-vector
 			r_x = particles[i].x - particles[j].x;
@@ -146,3 +123,5 @@ void showGraphics(
 		const int N,
 		const double circleRadius,
 		const int circleColour);
+
+void computeCenterOfMass(node_t* node);
