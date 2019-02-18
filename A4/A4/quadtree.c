@@ -6,20 +6,7 @@ void freeQuadTree(node_t* node);
 void buildQuadtree(particle_t* particles, int N, node_t* root) {
 
 	// Initialize Root node
-	root->particle = NULL;
-	root->centerOfMass_x = 0.0;
-	root->centerOfMass_y = 0.0;
-	root->mass = 0.0;
-
-	root->yTop = 1.0;
-	root->yBot = 0.0;
-	root->xLeft = 0.0;
-	root->xRight = 1.0;
-
-	root->childNorthWest = NULL;
-	root->childNorthEast = NULL;
-	root->childSouthWest = NULL;
-	root->childSouthEast = NULL;
+	initialize(root, 1.0, 0.0, 0.0, 1.0);
 
 	unsigned int i;
 	for (i = 0; i < N; i++) {
@@ -174,13 +161,18 @@ void freeQuadTree(node_t* node) {
 
 void initialize(
 		node_t* node,
-		double x_left, double x_right, double y_top, double y_bottom) {
-	node->particle = NULL;
+		double yTop, double yBot, double xLeft, double xRight) {
 
-	node->topBorder = y_top;
-	node->botBorder = y_bot;
-	node->leftBorder = x_left;
-	node->rightBorder = x_right;
+	// Initialize Root node
+	node->particle = NULL;
+	node->centerOfMass_x = 0.0;
+	node->centerOfMass_y = 0.0;
+	node->mass = 0.0;
+
+	node->yTop = yTop;
+	node->yBot = yBot;
+	node->xLeft = xLeft;
+	node->xRight = xRight;
 
 	node->childNorthWest = NULL;
 	node->childNorthEast = NULL;

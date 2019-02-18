@@ -79,3 +79,16 @@ void printQuadTree(node_t* node);
  * @param node Node of quadtree
  */
 void freeQuadTree(node_t* node);
+
+/**
+ * Initializes a node.
+ *
+ * @param node   Node of quadtree
+ * @param yTop   Top y-value of node
+ * @param yBot   Bottom y-value of node
+ * @param xLeft  Left x-value of node
+ * @param xRight Right x-value of node
+ */
+void initialize(
+		node_t* node,
+		double yTop, double yBot, double xLeft, double xRight);
