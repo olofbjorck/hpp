@@ -82,7 +82,7 @@ void subdivide(node_t* node) {
 	node->childNorthWest = (node_t*) malloc(sizeof(node_t));
 	initialize(
 			node->childNorthWest,
-			node->xCenter + node->sideHalf,
+			node->xCenter - node->sideHalf,
 			node->yCenter + node->sideHalf,
 			node->sideHalf/2);
 	printf("%s\n", "... \t\tnorth east");
@@ -96,15 +96,15 @@ void subdivide(node_t* node) {
 	node->childSouthWest = (node_t*) malloc(sizeof(node_t));
 	initialize(
 			node->childSouthWest,
-			node->xCenter + node->sideHalf,
-			node->yCenter + node->sideHalf,
+			node->xCenter - node->sideHalf,
+			node->yCenter - node->sideHalf,
 			node->sideHalf/2);
 	printf("%s\n", "... \t\tsouth east");
 	node->childSouthEast = (node_t*) malloc(sizeof(node_t));
 	initialize(
-			node->childSouthWest,
+			node->childSouthEast,
 			node->xCenter + node->sideHalf,
-			node->yCenter + node->sideHalf,
+			node->yCenter - node->sideHalf,
 			node->sideHalf/2);
 }
 
