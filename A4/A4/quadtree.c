@@ -6,7 +6,7 @@ void freeQuadtree(node_t* node);
 void buildQuadtree(particle_t* particles, int N, node_t* root) {
 
 	// Initialize Root node
-	initialize(root, 1.0, 0.0, 0.0, 1.0);
+	initialize(root, 0.5, 0.5, 0.5);
 
 	unsigned int i;
 	for (i = 0; i < N; i++) {
@@ -80,34 +80,42 @@ void insert(particle_t* particle, node_t* node) {
 void subdivide(node_t* node) {
 	printf("%s\n", "... allocating:\tnorth west");
 	node->childNorthWest = (node_t*) malloc(sizeof(node_t));
-	initialize(node->childNorthWest, node->yTop, (node->yBot)/2, node->xLeft, (node->xRight)/2);
+	initialize(
+			node->childNorthWest,
+			node->xCenter + node->sideHalf,
+			node->yCenter + node->sideHalf,
+			node->sideHalf/2);
 	printf("%s\n", "... \t\tnorth east");
 	node->childNorthEast = (node_t*) malloc(sizeof(node_t));
-	initialize(node->childNorthEast, node->yTop, (node->yBot)/2, (node->xLeft)/2, node->xRight);
+	initialize(
+			node->childNorthEast,
+			node->xCenter + node->sideHalf,
+			node->yCenter + node->sideHalf,
+			node->sideHalf/2);
 	printf("%s\n", "... \t\tsouth west");
 	node->childSouthWest = (node_t*) malloc(sizeof(node_t));
-	initialize(node->childSouthWest, (node->yTop)/2, node->yBot, node->xLeft, (node->xRight)/2);
+	initialize(
+			node->childSouthWest,
+			node->xCenter + node->sideHalf,
+			node->yCenter + node->sideHalf,
+			node->sideHalf/2);
 	printf("%s\n", "... \t\tsouth east");
 	node->childSouthEast = (node_t*) malloc(sizeof(node_t));
-	initialize(node->childSouthEast, (node->yTop)/2, node->yBot, (node->xLeft)/2, node->xRight);
+	initialize(
+			node->childSouthWest,
+			node->xCenter + node->sideHalf,
+			node->yCenter + node->sideHalf,
+			node->sideHalf/2);
 }
 
 node_t* findCorrectChildForParticle(particle_t* particle, node_t* node) {
 
-	if(particle->x) {
-
-	}
-
 	printf("%s\n", "Inside findCorrectChildForParticle");
 
-	if(
-			particle->x < node->xRight &&
-			particle->x >= (node->xLeft - node->xRight)/2.0) {
+	if (particle->x >= node->xCenter) {
 		// Indicates R.H. side
 		printf("%s\n", "... R.H. side");
-		if(
-				particle->y < node->yTop &&
-				particle->y >= (node->yTop - node->yBot)/2.0) {
+		if (particle->y >= node->yCenter) {
 			// Indicates top part
 			printf("%s\n", "... \t top part");
 			return node->childNorthEast;
@@ -120,9 +128,7 @@ node_t* findCorrectChildForParticle(particle_t* particle, node_t* node) {
 	} else {
 		// Indicates L.H. side
 		printf("%s\n", "... L.H. side");
-		if(
-				particle->y < node->yTop
-				&& particle->y >= (node->yTop- node->yBot)/2.0) {
+		if(particle->y >= node->yCenter) {
 			// Indicates top part
 			printf("%s\n", "... \t top part");
 			return node->childNorthWest;
@@ -168,7 +174,7 @@ printf("%s\n", "Freeing Quadtree");
 
 void initialize(
 		node_t* node,
-		double yTop, double yBot, double xLeft, double xRight) {
+		double xCenter, double yCenter, double sideHalf) {
 
 	// Initialize Root node
 	node->particle = NULL;
@@ -176,10 +182,9 @@ void initialize(
 	node->centerOfMass_y = 0.0;
 	node->mass = 0.0;
 
-	node->yTop = yTop;
-	node->yBot = yBot;
-	node->xLeft = xLeft;
-	node->xRight = xRight;
+	node->xCenter = xCenter;
+	node->yCenter = yCenter;
+	node->sideHalf = sideHalf;
 
 	node->childNorthWest = NULL;
 	node->childNorthEast = NULL;

@@ -19,10 +19,9 @@ typedef struct node {
 	double centerOfMass_y; // Center of mass y-value
 	double mass; // Mass of the node
 
-	double yTop; // y-value
-	double yBot; // y-value
-	double xLeft; // x-value
-	double xRight; // x-value
+	double xCenter;
+	double yCenter;
+	double sideHalf;
 
 	struct node* childNorthWest; // Upper left quadrant child
 	struct node* childNorthEast; // Upper right quadrant child
@@ -91,4 +90,4 @@ void freeQuadtree(node_t* node);
  */
 void initialize(
 		node_t* node,
-		double yTop, double yBot, double xLeft, double xRight);
+		double xCenter, double yCenter, double sideHalf);
