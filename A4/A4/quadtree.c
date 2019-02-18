@@ -81,13 +81,17 @@ void insert(particle_t* particle, node_t* node) {
 
 void subdivide(node_t* node) {
 	printf("%s\n", "... allocating:\tnorth west");
-	node->childNorthWest = (node_t*) calloc(1, sizeof(node_t));
+	node->childNorthWest = (node_t*) malloc(sizeof(node_t));
+	initialize(node->childNorthWest, node->yTop, (node->yBot)/2, node->xLeft, (node->xRight)/2);
 	printf("%s\n", "... \t\tnorth east");
-	node->childNorthEast = (node_t*) calloc(1, sizeof(node_t));
+	node->childNorthEast = (node_t*) malloc(sizeof(node_t));
+	initialize(node->childNorthEast, node->yTop, (node->yBot)/2, (node->xLeft)/2, node->xRight);
 	printf("%s\n", "... \t\tsouth west");
-	node->childSouthWest = (node_t*) calloc(1, sizeof(node_t));
+	node->childSouthWest = (node_t*) malloc(sizeof(node_t));
+	initialize(node->childSouthWest, (node->yTop)/2, node->yBot, node->xLeft, (node->xRight)/2);
 	printf("%s\n", "... \t\tsouth east");
-	node->childSouthWest = (node_t*) calloc(1, sizeof(node_t));
+	node->childSouthEast = (node_t*) malloc(sizeof(node_t));
+	initialize(node->childSouthEast, (node->yTop)/2, node->yBot, (node->xLeft)/2, node->xRight);
 }
 
 node_t* findCorrectChildForParticle(particle_t* particle, node_t* node) {
