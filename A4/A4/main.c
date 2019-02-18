@@ -83,7 +83,7 @@ int main(int argc, char const *argv[]) {
 		// Movement only
 		//simulate(particles, N, G, eps0, nsteps, delta_t);
 		printf("%s\n", "Building quadtree");
-		buildQuadtree(particles, root);
+		buildQuadtree(particles, N, root);
 	}
 
 	// Write new state of particles to file

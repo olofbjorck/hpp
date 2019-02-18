@@ -37,7 +37,7 @@ typedef struct node {
  * @param N			Total number of particles
  * @param root		Root node of quadtree
  */
-void buildQuadTree(particle_t* particles, int N, node_t* root);
+void buildQuadtree(particle_t* particles, int N, node_t* root);
 
 /**
  * Inserts a particle into the quadtree, using recursion

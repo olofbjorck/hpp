@@ -79,29 +79,41 @@ void subdivide(node_t* node) {
 
 node_t* findCorrectChildForParticle(particle_t* particle, node_t* node) {
 
+	if(particle->x) {
+
+	}
+
+	printf("%s\n", "Inside findCorrectChildForParticle");
+
 	if(
 			particle->x < node->rightBorder &&
 			particle->x >= (node->leftBorder - node->rightBorder)/2.0) {
 		// Indicates R.H. side
+		printf("%s\n", "... R.H. side");
 		if(
 				particle->y < node->topBorder &&
 				particle->y >= (node->topBorder - node->botBorder)/2.0) {
 			// Indicates top part
+			printf("%s\n", "... \t top part");
 			return node->childNorthEast;
 		} else {
 			// Indicates bottom part
+			printf("%s\n", "... \t bottom part");
 			return node->childSouthEast;
 		}
 
 	} else {
 		// Indicates L.H. side
+		printf("%s\n", "... L.H. side");
 		if(
 				particle->y < node->topBorder
 				&& particle->y >= (node->topBorder - node->botBorder)/2.0) {
 			// Indicates top part
+			printf("%s\n", "... \t top part");
 			return node->childNorthWest;
 		} else {
 			// Indicates bottom part
+			printf("%s\n", "... \t bottom part");
 			return node->childSouthWest;
 		}
 	}
