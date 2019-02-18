@@ -84,7 +84,7 @@ int main(int argc, char const *argv[]) {
 		//simulate(particles, N, G, eps0, nsteps, delta_t);
 		printf("%s\n", "Building quadtree");
 		buildQuadtree(particles, N, root);
-		printQuadTree(root);
+		printQuadtree(root);
 	}
 
 	// Write new state of particles to file
@@ -94,8 +94,7 @@ int main(int argc, char const *argv[]) {
 	// Free memory
 	free(particles);
 	free(brightness);
-	freeQuadTree(root);
-	free(root);
+	freeQuadtree(root);
 
 	// Success
 	return 0;

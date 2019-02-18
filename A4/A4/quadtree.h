@@ -71,14 +71,14 @@ node_t* findCorrectChildForParticle(particle_t* particle, node_t* node);
  *
  * @param node Node of quadtree
  */
-void printQuadTree(node_t* node);
+void printQuadtree(node_t* node);
 
 /**
  * Frees all nodes except the root of the quadtree.
  *
  * @param node Node of quadtree
  */
-void freeQuadTree(node_t* node);
+void freeQuadtree(node_t* node);
 
 /**
  * Initializes a node.
