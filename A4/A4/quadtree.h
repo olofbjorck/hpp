@@ -19,10 +19,10 @@ typedef struct node {
 	double centerOfMass_y; // Center of mass y-value
 	double mass; // Mass of the node
 
-	double topBorder; // y-value
-	double botBorder; // y-value
-	double leftBorder; // x-value
-	double rightBorder; // x-value
+	double yTop; // y-value
+	double yBot; // y-value
+	double xLeft; // x-value
+	double xRight; // x-value
 
 	struct node* childNorthWest; // Upper left quadrant child
 	struct node* childNorthEast; // Upper right quadrant child

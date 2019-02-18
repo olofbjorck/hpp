@@ -5,6 +5,22 @@ void freeQuadTree(node_t* node);
 
 void buildQuadtree(particle_t* particles, int N, node_t* root) {
 
+	// Initialize Root node
+	root->particle = NULL;
+	root->centerOfMass_x = 0.0;
+	root->centerOfMass_y = 0.0;
+	root->mass = 0.0;
+
+	root->yTop = 1.0;
+	root->yBot = 0.0;
+	root->xLeft = 0.0;
+	root->xRight = 1.0;
+
+	root->childNorthWest = NULL;
+	root->childNorthEast = NULL;
+	root->childSouthWest = NULL;
+	root->childSouthEast = NULL;
+
 	unsigned int i;
 	for (i = 0; i < N; i++) {
 		printf("Inserting particle %d\n", i);
@@ -18,10 +34,12 @@ void buildQuadtree(particle_t* particles, int N, node_t* root) {
 void insert(particle_t* particle, node_t* node) {
 
 	// NULL node - make a leaf and add particle
-	/*
+	/*	
 	if(!node) {
-		return 1;
-	}*/
+		printf("ERROR: NULL node");
+		return;
+	}
+	*/
 
 	printf("%s\n", "Inside insert function");
 
@@ -32,8 +50,11 @@ void insert(particle_t* particle, node_t* node) {
 
 		// Make non-leaf
 		printf("%s\n", "... making non-leaf");
-		particle_t* tempParticle = node->particle;
+		particle_t* tempParticle;
+		//printf("%p\n", node->particle);
+		tempParticle = node->particle;
 		node->particle = NULL;
+		sleep(10);
 
 		// Subdivide the node (make it an interior node)
 		printf("%s\n", "... subdividing");
@@ -86,13 +107,13 @@ node_t* findCorrectChildForParticle(particle_t* particle, node_t* node) {
 	printf("%s\n", "Inside findCorrectChildForParticle");
 
 	if(
-			particle->x < node->rightBorder &&
-			particle->x >= (node->leftBorder - node->rightBorder)/2.0) {
+			particle->x < node->xRight &&
+			particle->x >= (node->xLeft - node->xRight)/2.0) {
 		// Indicates R.H. side
 		printf("%s\n", "... R.H. side");
 		if(
-				particle->y < node->topBorder &&
-				particle->y >= (node->topBorder - node->botBorder)/2.0) {
+				particle->y < node->yTop &&
+				particle->y >= (node->yTop - node->yBot)/2.0) {
 			// Indicates top part
 			printf("%s\n", "... \t top part");
 			return node->childNorthEast;
@@ -106,8 +127,8 @@ node_t* findCorrectChildForParticle(particle_t* particle, node_t* node) {
 		// Indicates L.H. side
 		printf("%s\n", "... L.H. side");
 		if(
-				particle->y < node->topBorder
-				&& particle->y >= (node->topBorder - node->botBorder)/2.0) {
+				particle->y < node->yTop
+				&& particle->y >= (node->yTop- node->yBot)/2.0) {
 			// Indicates top part
 			printf("%s\n", "... \t top part");
 			return node->childNorthWest;
