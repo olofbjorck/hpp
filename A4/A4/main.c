@@ -66,7 +66,7 @@ int main(int argc, char const *argv[]) {
 
 	// Initialize quadtree root
 	printf("%s\n", "Allocating root");
-	node_t* root = (node_t*) calloc(1, sizeof(node_t));
+	node_t* root = (node_t*) malloc(sizeof(node_t));
 
 	// Read data
 	printf("%s\n", "Reading data");

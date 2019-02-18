@@ -81,13 +81,13 @@ void insert(particle_t* particle, node_t* node) {
 
 void subdivide(node_t* node) {
 	printf("%s\n", "... allocating:\tnorth west");
-	node->childNorthWest = (node_t*) calloc(1, sizeof(node_t));
+	node->childNorthWest = (node_t*) malloc(sizeof(node_t));
 	printf("%s\n", "... \t\tnorth east");
-	node->childNorthEast = (node_t*) calloc(1, sizeof(node_t));
+	node->childNorthEast = (node_t*) malloc(sizeof(node_t));
 	printf("%s\n", "... \t\tsouth west");
-	node->childSouthWest = (node_t*) calloc(1, sizeof(node_t));
+	node->childSouthWest = (node_t*) malloc(sizeof(node_t));
 	printf("%s\n", "... \t\tsouth east");
-	node->childSouthWest = (node_t*) calloc(1, sizeof(node_t));
+	node->childSouthEast = (node_t*) malloc(sizeof(node_t));
 }
 
 node_t* findCorrectChildForParticle(particle_t* particle, node_t* node) {
@@ -136,9 +136,9 @@ void printQuadTree(node_t* node) {
 
 	if (node->childNorthWest) {
 		printQuadTree(node->childNorthWest);
-		printQuadTree(node->childNorthWest);
+		printQuadTree(node->childNorthEast);
 		printQuadTree(node->childSouthWest);
-		printQuadTree(node->childSouthWest);
+		printQuadTree(node->childSouthEast);
 	}
 	if (node->particle) {
 		printf("x = %lf\n", node->particle->x);
