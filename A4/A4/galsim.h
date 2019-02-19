@@ -76,7 +76,7 @@ inline void updateParticles(particle_t* __restrict particles,
 	unsigned int i, j; // Loop iterators
 	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
 	double denom = 0.0; // Denominator
-	double theta;
+	//double theta;
 
 	for (i = 0; i < N; i++) {
 		particles[i].a_x = 0.0;
@@ -85,8 +85,8 @@ inline void updateParticles(particle_t* __restrict particles,
 
 	// Loop remaining particles, assuming acceleration is properly initialized
 	for (i = 0; i < N; i++) {
-		getLeaf();
-		compareWithSiblings();
+		//getLeaf();
+		//compareWithSiblings();
 
 		for (j = i + 1; j < N; j++) {
 			// Calculate r-vector

@@ -2,6 +2,7 @@
 // time ./galsim 03000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
 
 // ./galsim 2 ../input_data/circles_N_2.gal 100 0.00001 0.1 0
+// ./galsim 4 ../input_data/circles_N_4.gal 100 0.00001 0.1 0
 
 
 // REQUIRES PRE-COMPILATION OF compare_gal_files.c: REMEMBER TO REMOVE BEFORE HANDIN
@@ -17,10 +18,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "modules.h"
 #include "graphics.h"
 #include "galsim.h"
 #include "io.h"
 #include "quadtree.h"
+
+void printParticles(particle_t* particles, int N);
+void printTotalMass(particle_t*, int);
 
 /**
  * Main function
@@ -75,6 +80,9 @@ int main(int argc, char const *argv[]) {
 	if (readData(particles, brightness, filename, N))
 		return 1;
 
+	//printParticles(particles, N);
+	printTotalMass(particles, N);
+
 	// Simulate
 	if (graphics) {
 		// With graphics
@@ -87,8 +95,10 @@ int main(int argc, char const *argv[]) {
 		printf("%s\n", "Building quadtree");
 		buildQuadtree(particles, N, root);
 		computeCenterOfMass(root);
-		computeForces(particles, N, root);
-		printf("Root mass = %lf\n", root->mass);
+		//computeForces(particles, N, root);
+		printf("root->mass = %lf\n", root->mass);
+		printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
+		printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
 	}
 
 	// Write new state of particles to file
@@ -100,6 +110,25 @@ int main(int argc, char const *argv[]) {
 	free(brightness);
 	freeQuadtree(root);
 
+	if (theta_max) {}
 	// Success
 	return 0;
+}
+
+void printParticles(particle_t* particles, int N) {
+	unsigned int i;
+	for (i = 0; i < N; i++) {
+		printf("Particle %d:\n", i);
+		printf("... (x, y) = (%lf, %lf)\n", particles[i].x, particles[i].y);
+		printf("... mass = %lf\n", particles[i].mass);
+	}
+}
+
+void printTotalMass(particle_t* particles, int N) {
+	unsigned int i;
+	double mass = 0;
+	for (i = 0; i < N; i++) {
+		mass += particles[i].mass;
+	}
+	printf("Total mass = %lf\n", mass);
 }

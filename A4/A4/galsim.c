@@ -74,7 +74,39 @@ inline void showGraphics(
 	usleep(3000);	// TODO make variable fps
 }
 
-extern void updateTreeForces(particle_t* particle, ) {
+void computeCenterOfMass(node_t* node) {
+
+	// If node has children (node is interior node)
+	if (node->children[0]) {
+
+		unsigned int i;
+		for (i = 0; i < 4; i++) {
+			// Recurse
+			computeCenterOfMass(node->children[i]);
+			// Add to centerOfMass
+			node->centerOfMass_x += node->children[i]->centerOfMass_x
+									*node->children[i]->mass;
+			node->centerOfMass_y += node->children[i]->centerOfMass_y
+									*node->children[i]->mass;
+		}
+
+		// Compute centerOfMass
+		node->centerOfMass_x = node->centerOfMass_x/node->mass;
+		node->centerOfMass_y = node->centerOfMass_y/node->mass;
+
+	// else: Node is leaf
+	} else {
+		// If node is occupied leaf
+		if (node->particle) {
+			// Set center of mass
+			node->centerOfMass_x = node->particle->x;
+			node->centerOfMass_y = node->particle->y;
+		}
+		// else: do nothing, centerOfMass is 0 as default
+	}
+}
+
+extern void updateTreeForces(particle_t* particle, int N, node_t* root) {
 
 
 }
