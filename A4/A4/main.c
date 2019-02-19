@@ -24,6 +24,12 @@
 #include "io.h"
 #include "quadtree.h"
 
+void computeForces(particle_t* particles, int N, node_t* root,
+		const double G,
+		const double eps0,
+		const double delta_t,
+		const double theta_max);
+
 void printParticles(particle_t* particles, int N);
 void printTotalMass(particle_t*, int);
 
@@ -95,7 +101,7 @@ int main(int argc, char const *argv[]) {
 		printf("%s\n", "Building quadtree");
 		buildQuadtree(particles, N, root);
 		computeCenterOfMass(root);
-		//computeForces(particles, N, root);
+		computeForces(particles, N, root, G, eps0, delta_t, theta_max);
 		printf("root->mass = %lf\n", root->mass);
 		printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
 		printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
@@ -110,9 +116,56 @@ int main(int argc, char const *argv[]) {
 	free(brightness);
 	freeQuadtree(root);
 
-	if (theta_max) {}
 	// Success
 	return 0;
+}
+
+void computeForces(particle_t* particles, int N, node_t* root,
+		const double G,
+		const double eps0,
+		const double delta_t,
+		const double theta_max) {
+
+	unsigned int i, j; // Loop iterators
+	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
+	double denom = 0.0; // Denominator
+	node_t* node;
+	double theta;
+
+	// Set acceleration to 0
+	for (i = 0; i < N; i++) {
+		particles[i].a_x = 0.0;
+		particles[i].a_y = 0.0;
+	}
+
+	// Loop remaining particles, assuming acceleration is properly initialized
+	for (i = 0; i < N; i++) {
+		
+		node = find(&particles[i], node);
+
+		for (j = i + 1; j < N; j++) {
+			// Calculate r-vector
+			r_x = particles[i].x - particles[j].x;
+			r_y = particles[i].y - particles[j].y;
+			r = sqrt(r_x*r_x + r_y*r_y);
+			// Calculate denominator
+			denom = r + eps0;
+			denom = 1/(denom*denom*denom); // 1 msec faster than using /denom below
+			// Calculate acceleration (a_x, a_y == 0 at start due to calloc)
+			particles[i].a_x += particles[j].mass*r_x*denom;
+			particles[i].a_y += particles[j].mass*r_y*denom;
+			// Calculate corresponding acceleration for other particle, using
+			// Newton's third law
+			particles[j].a_x -= particles[i].mass*r_x*denom;
+			particles[j].a_y -= particles[i].mass*r_y*denom;
+		}
+		// Update velocity
+		particles[i].v_x += -G*delta_t*particles[i].a_x;
+		particles[i].v_y += -G*delta_t*particles[i].a_y;
+		// Update position
+		particles[i].x += delta_t*particles[i].v_x;
+		particles[i].y += delta_t*particles[i].v_y;
+	}
 }
 
 void printParticles(particle_t* particles, int N) {

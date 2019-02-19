@@ -182,7 +182,7 @@ node_t* find(particle_t* particle, node_t* node) {
 				return node;
 		} else {
 			printf("%s\n", "ERROR: Particle could not be found");
-			return NULL;
+			return node;
 		}
 	}
 }

@@ -73,3 +73,4 @@ void initialize(
 
 void printQuadtree(node_t* node);
 void freeQuadtree(node_t* node);
+node_t* find(particle_t* particle, node_t* node);

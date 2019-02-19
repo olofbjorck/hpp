@@ -19,9 +19,6 @@ void simulate(
 	}
 }*/
 
-
-
-
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
 		particle_t* __restrict particles,
@@ -104,9 +101,4 @@ void computeCenterOfMass(node_t* node) {
 		}
 		// else: do nothing, centerOfMass is 0 as default
 	}
-}
-
-extern void updateTreeForces(particle_t* particle, int N, node_t* root) {
-
-
 }
