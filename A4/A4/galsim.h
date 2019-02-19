@@ -67,6 +67,7 @@ void simulateWithGraphics(
  * @param G         The Newton gravitational constant G.
  * @param eps0      Plummer spheres constant to smooth calculations.
  */
+/*
 inline void updateParticles(particle_t* __restrict particles,
 		const int N,
 		const double G,
@@ -112,6 +113,7 @@ inline void updateParticles(particle_t* __restrict particles,
 		particles[i].y += delta_t*particles[i].v_y;
 	}
 }
+*/
 
 /**
  * Shows the state of the particles graphically.

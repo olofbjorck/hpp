@@ -24,11 +24,13 @@
 #include "io.h"
 #include "quadtree.h"
 
-void computeForces(particle_t* particles, int N, node_t* root,
+void updateParticles(particle_t* particles, int N, node_t* root,
 		const double G,
 		const double eps0,
 		const double delta_t,
 		const double theta_max);
+
+void computeForces(particle_t* particle, node_t* node, const double theta_max);
 
 void printParticles(particle_t* particles, int N);
 void printTotalMass(particle_t*, int);
@@ -101,7 +103,7 @@ int main(int argc, char const *argv[]) {
 		printf("%s\n", "Building quadtree");
 		buildQuadtree(particles, N, root);
 		computeCenterOfMass(root);
-		computeForces(particles, N, root, G, eps0, delta_t, theta_max);
+		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
 		printf("root->mass = %lf\n", root->mass);
 		printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
 		printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
@@ -120,7 +122,7 @@ int main(int argc, char const *argv[]) {
 	return 0;
 }
 
-void computeForces(particle_t* particles, int N, node_t* root,
+void updateParticles(particle_t* particles, int N, node_t* root,
 		const double G,
 		const double eps0,
 		const double delta_t,
@@ -140,7 +142,7 @@ void computeForces(particle_t* particles, int N, node_t* root,
 
 	// Loop remaining particles, assuming acceleration is properly initialized
 	for (i = 0; i < N; i++) {
-		
+
 		node = find(&particles[i], node);
 
 		for (j = i + 1; j < N; j++) {
@@ -166,6 +168,11 @@ void computeForces(particle_t* particles, int N, node_t* root,
 		particles[i].x += delta_t*particles[i].v_x;
 		particles[i].y += delta_t*particles[i].v_y;
 	}
+}
+
+void computeForces(particle_t* particle, node_t* node, const double theta_max) {
+
+
 }
 
 void printParticles(particle_t* particles, int N) {

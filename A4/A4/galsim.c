@@ -49,11 +49,12 @@ void simulateWithGraphics(
 
 // Calculates force exerted on every particle
 // See galsim.h for definition
+/*
 extern void updateParticles(particle_t* __restrict particles,
 		const int N,
 		const double G,
 		const double eps0,
-		const double delta_t);
+		const double delta_t);*/
 
 // Show particles graphically
 inline void showGraphics(
