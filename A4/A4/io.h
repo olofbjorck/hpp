@@ -4,8 +4,9 @@
  */
 
 #pragma once
-#include "galsim.h"
+#include "modules.h"
 #include <string.h>
+#include <stdio.h>
 
 /**
  * Reads galaxy data from input file "filename" into particle_t* array
@@ -20,7 +21,7 @@
  * @return            Returns 1 if data was read successfully, else 0.
  */
  int readData(
-		particle_t* __restrict particles,
+		particles_t* __restrict particles,
 		double* __restrict brightness,
 		const char* filename, const int N);
 
@@ -32,6 +33,6 @@
  * @param N          The total number of particles.
  */
  int writeOutput(
-		particle_t* __restrict particles,
+		particles_t* __restrict particles,
 		double* __restrict brightness,
 		const int N);

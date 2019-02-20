@@ -2,7 +2,7 @@
 
 // Read data from file.
 int readData(
-		particle_t* __restrict particles,
+		particles_t* __restrict particles,
 		double* __restrict brightness,
 		const char* filename, const int N) {
 
@@ -28,11 +28,11 @@ int readData(
 	unsigned int i;
 	for (i = 0; i < N; i++) {
 		if (
-				fread(&particles[i].x, sizeof(double), 1, fp) &&
-				fread(&particles[i].y, sizeof(double), 1, fp) &&
-				fread(&particles[i].mass, sizeof(double), 1, fp)  &&
-				fread(&particles[i].v_x, sizeof(double), 1, fp)  &&
-				fread(&particles[i].v_y, sizeof(double), 1, fp)  &&
+				fread(&(particles->x[i]), sizeof(double), 1, fp) &&
+				fread(&(particles->y[i]), sizeof(double), 1, fp) &&
+				fread(&(particles->mass[i]), sizeof(double), 1, fp)  &&
+				fread(&(particles->v_x[i]), sizeof(double), 1, fp)  &&
+				fread(&(particles->v_y[i]), sizeof(double), 1, fp)  &&
 				fread(&brightness[i], sizeof(double), 1, fp)) {
 			// Do nothing
 		} else {
@@ -53,7 +53,7 @@ int readData(
 
 // Write current state of all particles to file
 int writeOutput(
-		particle_t* __restrict particles,
+		particles_t* __restrict particles,
 		double* __restrict brightness,
 		const int N) {
 
@@ -70,11 +70,11 @@ int writeOutput(
 	unsigned int i;
 	for (i = 0; i < N; i++) {
 		if (
-				fwrite(&particles[i].x, sizeof(double), 1, fp) &&
-				fwrite(&particles[i].y, sizeof(double), 1, fp) &&
-				fwrite(&particles[i].mass, sizeof(double), 1, fp)  &&
-				fwrite(&particles[i].v_x, sizeof(double), 1, fp)  &&
-				fwrite(&particles[i].v_y, sizeof(double), 1, fp)  &&
+				fwrite(&(particles->x[i]), sizeof(double), 1, fp) &&
+				fwrite(&(particles->y[i]), sizeof(double), 1, fp) &&
+				fwrite(&(particles->mass[i]), sizeof(double), 1, fp)  &&
+				fwrite(&(particles->v_x[i]), sizeof(double), 1, fp)  &&
+				fwrite(&(particles->v_y[i]), sizeof(double), 1, fp)  &&
 				fwrite(&brightness[i], sizeof(double), 1, fp)) {
 			// Do nothing
 		} else {

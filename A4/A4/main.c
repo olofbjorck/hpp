@@ -22,10 +22,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "modules.h"
-#include "graphics.h"
-#include "galsim.h"
+//#include "graphics.h"
+//#include "galsim.h"
 #include "io.h"
-#include "quadtree.h"
+//#include "quadtree.h"
 
 /**
  * Main function
@@ -57,14 +57,20 @@ int main(int argc, char const *argv[]) {
 	const double G = 100.0/N; // Gravitational constant
 	const double eps0 = 0.001; // Plummer sphere constant
 
-	// Graphics
+	// Graphics constants
 	const unsigned int windowSize = 1000;
 	const float circleRadius = 0.0025f;
 	const float circleColour = 0.0f;
 
-	// Create array with all particles
-	particle_t* particles = (particle_t*) malloc(N * sizeof(particle_t)); // TODO better malloc? array of pointers to structs?
+	// Create particles struct and allocate space
+	particles_t* particles = (particles_t*) malloc(sizeof(particles_t));
+	particles->x = (double*) malloc(N * sizeof(double));
+	particles->y = (double*) malloc(N * sizeof(double));
+	particles->v_x = (double*) malloc(N * sizeof(double));
+	particles->v_y = (double*) malloc(N * sizeof(double));
+	particles->mass = (double*) malloc(N * sizeof(double));
 	double* brightness = (double*) malloc(N * sizeof(double));
+
 	if (!(particles && brightness)) {
 		// Program fail, exit
 		printf("ERROR: Malloc failure");
@@ -75,7 +81,7 @@ int main(int argc, char const *argv[]) {
 	printf("%s\n", "Reading data");
 	if (readData(particles, brightness, filename, N))
 		return 1;
-
+/*
 	//printParticles(particles, N);
 	printTotalMass(particles, N);
 
@@ -89,7 +95,7 @@ int main(int argc, char const *argv[]) {
 		// Movement only
 		simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
 	}
-
+*/
 	// Write new state of particles to file
 	if (writeOutput(particles, brightness, N))
 		return 1;
