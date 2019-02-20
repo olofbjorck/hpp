@@ -59,8 +59,8 @@ void simulateWithGraphics(
  *
  *
  */
-void calculateForces(particle_t* __restrict particle,
-          node_t* __restrict node,
+void calculateForces(particle_t* particle,
+          node_t* node,
           const double G,
           const double eps0,
           const double delta_t,

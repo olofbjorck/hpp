@@ -73,8 +73,8 @@ extern inline void updateParticles(particle_t* __restrict particles,
 		const double theta_max);
 
 // Calculates force exerted on every particle, recursively
-void calculateForces(particle_t* __restrict particle,
-		node_t* __restrict node,
+void calculateForces(particle_t* particle,
+		node_t* node,
 		const double G,
 		const double eps0,
 		const double delta_t,
