@@ -96,7 +96,7 @@ void calculateForces(particle_t* __restrict particle,
 					G, eps0, delta_t, theta_max,
 					a_x, a_y);
 
-	} else {
+	} else if (node->particle) {
 		// Treat as particle
 		// Calculate denominator
 		double denom = r + eps0;
@@ -131,21 +131,24 @@ void computeCenterOfMass(node_t* node) {
 	// If node has children (node is interior node)
 	if (node->children[0]) {
 
+		// Allocate interior node particle
+		node->particle = (particle_t*) malloc(sizeof(particle_t));
+
 		unsigned int i;
 		for (i = 0; i < 4; i++) {
 			// Recurse
 			computeCenterOfMass(node->children[i]);
 
-			// Allocate interior node particle
-			node->particle = (particle_t*) malloc(sizeof(particle_t));
-			// Compute mass
-			node->particle->mass += node->children[i]->particle->mass;
+			if (node->children[i]->particle) {
+				// Compute mass
+				node->particle->mass += node->children[i]->particle->mass;
 
-			// Add to centerOfMass
-			node->particle->x += node->children[i]->particle->x *
-									node->children[i]->particle->mass;
-			node->particle->y += node->children[i]->particle->y *
-									node->children[i]->particle->mass;
+				// Add to centerOfMass
+				node->particle->x += node->children[i]->particle->x *
+									 node->children[i]->particle->mass;
+				node->particle->y += node->children[i]->particle->y *
+									 node->children[i]->particle->mass;
+			}
 		}
 
 		// Compute centerOfMass
@@ -155,11 +158,13 @@ void computeCenterOfMass(node_t* node) {
 	// else: Node is leaf
 	} else {
 		// If node is unoccupied leaf
-		if (!node->particle) {
+		/*if (!node->particle) {
 			// Allocate empty leaf particle
 			node->particle = (particle_t*) malloc(sizeof(particle_t));
 			node->particle->mass = 0.0;
-		}
+			node->particle->x = 0.0;
+			node->particle->y = 0.0;
+		}*/
 		// else: do nothing, centerOfMass is 0 as default
 	}
 }

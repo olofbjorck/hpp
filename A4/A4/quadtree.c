@@ -71,7 +71,7 @@ void insert(particle_t* particle, node_t* node) {
 }
 
 void subdivide(node_t* node) {
-	
+
 	unsigned int i;
 	for (i = 0; i < 4; i++) {
 		//printf("%s\n", "Allocating children");
