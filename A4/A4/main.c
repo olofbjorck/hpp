@@ -4,6 +4,9 @@
 // ./galsim 2 ../input_data/circles_N_2.gal 100 0.00001 0.1 0
 // ./galsim 4 ../input_data/circles_N_4.gal 100 0.00001 0.1 0
 
+// Check: (from inside compare_gal_files folder)
+// ./compare_gal_files 3000 ../A4/result.gal ../ref_output_data/ellipse_N_03000_after100steps.gal
+
 
 // REQUIRES PRE-COMPILATION OF compare_gal_files.c: REMEMBER TO REMOVE BEFORE HANDIN
 // ./galsim 3000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
@@ -98,4 +101,3 @@ int main(int argc, char const *argv[]) {
 	// Success
 	return 0;
 }
-

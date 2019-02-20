@@ -13,18 +13,18 @@ void simulate(
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		//printf("%s\n", "Allocating root");
+		////printf("%s\n", "Allocating root");
 		node_t* root = (node_t*) malloc(sizeof(node_t));
-		printf("%s\n", "Building quadtree");
+		//printf("%s\n", "Building quadtree");
 		buildQuadtree(particles, N, root);
-		printf("%s\n", "Computing center of mass");
+		//printf("%s\n", "Computing center of mass");
 		computeCenterOfMass(root);
-		printf("%s\n", "Updating particles");
+		//printf("%s\n", "Updating particles");
 		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
-		//printf("root->mass = %lf\n", root->mass);
-		//printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
-		//printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
-		printf("%s\n", "Freeing quadtree");
+		////printf("root->mass = %lf\n", root->mass);
+		////printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
+		////printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
+		//printf("%s\n", "Freeing quadtree");
 		freeQuadtree(root);
 	}
 }
@@ -82,30 +82,36 @@ void calculateForces(particle_t* __restrict particle,
 		double* a_x,
 		double* a_y) {
 
-	// Get distance particle<->box
-	double r_x = particle->x - node->particle->x;
-	double r_y = particle->y - node->particle->y;
-	double r = sqrt(r_x*r_x + r_y*r_y);
+	if (node->particle) {
+		// Get distance particle<->box
+		//printf("%s\n", "Calculating distance");
+		double r_x = particle->x - node->particle->x;
+		double r_y = particle->y - node->particle->y;
+		double r = sqrt(r_x*r_x + r_y*r_y);
 
-	unsigned int i;
-	// Check theta and if box has children
-	if (node->children[0] && (2*node->sideHalf)/r > theta_max) {
-		// Travel branch
-		for(i = 0; i < 4; i++)
-			calculateForces(particle, node->children[i],
-					G, eps0, delta_t, theta_max,
-					a_x, a_y);
+		unsigned int i;
+		// Check theta and if box has children
+		//printf("%s\n", "Checking theta");
+		if (node->children[0] && (2*node->sideHalf)/r > theta_max) {
+			// Travel branch
+			for(i = 0; i < 4; i++) {
+				calculateForces(particle, node->children[i],
+						G, eps0, delta_t, theta_max,
+						a_x, a_y);
+			}
 
-	} else if (node->particle) {
-		// Treat as particle
-		// Calculate denominator
-		double denom = r + eps0;
-		denom = 1/(denom*denom*denom);
-		// Acceleration
-		*a_x += node->particle->mass*r_x*denom;
-		*a_y += node->particle->mass*r_y*denom;
-		//particle->a_x += node->mass*r_x*denom;
-		//particle->a_y += node->mass*r_y*denom;
+		} else {
+			//printf("%s\n", "else if node->particle");
+			// Treat as particle
+			// Calculate denominator
+			double denom = r + eps0;
+			denom = 1/(denom*denom*denom);
+			// Acceleration
+			*a_x += node->particle->mass*r_x*denom;
+			*a_y += node->particle->mass*r_y*denom;
+			//particle->a_x += node->mass*r_x*denom;
+			//particle->a_y += node->mass*r_y*denom;
+		}
 	}
 }
 
@@ -133,6 +139,7 @@ void computeCenterOfMass(node_t* node) {
 
 		// Allocate interior node particle
 		node->particle = (particle_t*) malloc(sizeof(particle_t));
+		node->particle->mass = 0.0;
 
 		unsigned int i;
 		for (i = 0; i < 4; i++) {
@@ -173,9 +180,9 @@ void computeCenterOfMass(node_t* node) {
 void printParticles(particle_t* particles, int N) {
 	unsigned int i;
 	for (i = 0; i < N; i++) {
-		printf("Particle %d:\n", i);
-		printf("... (x, y) = (%lf, %lf)\n", particles[i].x, particles[i].y);
-		printf("... mass = %lf\n", particles[i].mass);
+		//printf("Particle %d:\n", i);
+		//printf("... (x, y) = (%lf, %lf)\n", particles[i].x, particles[i].y);
+		//printf("... mass = %lf\n", particles[i].mass);
 	}
 }
 
@@ -185,5 +192,5 @@ void printTotalMass(particle_t* particles, int N) {
 	for (i = 0; i < N; i++) {
 		mass += particles[i].mass;
 	}
-	printf("Total mass = %lf\n", mass);
+	//printf("Total mass = %lf\n", mass);
 }
