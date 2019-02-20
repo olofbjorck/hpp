@@ -6,7 +6,6 @@
 
 #pragma once
 #include "modules.h"
-#include "galsim.h"
 
 /**
  * Builds a quadtree of size N from a root node, and fills it with particles
@@ -72,5 +71,7 @@ void initialize(
 		double xCenter, double yCenter, double sideHalf);
 
 void printQuadtree(node_t* node);
+
 void freeQuadtree(node_t* node);
+
 node_t* find(particle_t* particle, node_t* node);

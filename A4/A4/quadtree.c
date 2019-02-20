@@ -1,4 +1,6 @@
 #include "quadtree.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 void buildQuadtree(particle_t* particles, int N, node_t* root) {
 

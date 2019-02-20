@@ -5,7 +5,7 @@ LDFLAGS = -L/opt/X11/lib -lX11 -lm
 
 INCLUDES = -I/opt/X11/include -Igraphics
 
-galsim: main.o io.o quadtree.o galsim.o graphics.o
+galsim: quadtree.o galsim.o io.o graphics.o main.o
 	$(CC) galsim.o graphics.o main.o quadtree.o io.o -o galsim $(LDFLAGS)
 
 galsim.o: galsim.c galsim.h

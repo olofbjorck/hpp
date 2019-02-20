@@ -24,17 +24,6 @@
 #include "io.h"
 #include "quadtree.h"
 
-void updateParticles(particle_t* particles, int N, node_t* root,
-		const double G,
-		const double eps0,
-		const double delta_t,
-		const double theta_max);
-
-void computeForces(particle_t* particle, node_t* node, const double theta_max);
-
-void printParticles(particle_t* particles, int N);
-void printTotalMass(particle_t*, int);
-
 /**
  * Main function
  *
@@ -65,7 +54,7 @@ int main(int argc, char const *argv[]) {
 	const double G = 100.0/N; // Gravitational constant
 	const double eps0 = 0.001; // Plummer sphere constant
 
-	// Graphics variables
+	// Graphics
 	const unsigned int windowSize = 1000;
 	const float circleRadius = 0.0025f;
 	const float circleColour = 0.0f;
@@ -79,10 +68,6 @@ int main(int argc, char const *argv[]) {
 		return 1;
 	}
 
-	// Initialize quadtree root
-	printf("%s\n", "Allocating root");
-	node_t* root = (node_t*) malloc(sizeof(node_t));
-
 	// Read data
 	printf("%s\n", "Reading data");
 	if (readData(particles, brightness, filename, N))
@@ -95,18 +80,11 @@ int main(int argc, char const *argv[]) {
 	if (graphics) {
 		// With graphics
 		simulateWithGraphics(
-				particles, N, G, eps0, nsteps, delta_t,
+				particles, N, G, eps0, nsteps, delta_t, theta_max,
 				program, windowSize, circleRadius, circleColour);
 	} else {
 		// Movement only
-		//simulate(particles, N, G, eps0, nsteps, delta_t);
-		printf("%s\n", "Building quadtree");
-		buildQuadtree(particles, N, root);
-		computeCenterOfMass(root);
-		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
-		printf("root->mass = %lf\n", root->mass);
-		printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
-		printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
+		simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
 	}
 
 	// Write new state of particles to file
@@ -116,79 +94,8 @@ int main(int argc, char const *argv[]) {
 	// Free memory
 	free(particles);
 	free(brightness);
-	freeQuadtree(root);
 
 	// Success
 	return 0;
 }
 
-void updateParticles(particle_t* particles, int N, node_t* root,
-		const double G,
-		const double eps0,
-		const double delta_t,
-		const double theta_max) {
-
-	unsigned int i, j; // Loop iterators
-	double r = 0.0, r_x = 0.0, r_y = 0.0; // r-vector
-	double denom = 0.0; // Denominator
-	node_t* node;
-	double theta;
-
-	// Set acceleration to 0
-	for (i = 0; i < N; i++) {
-		particles[i].a_x = 0.0;
-		particles[i].a_y = 0.0;
-	}
-
-	// Loop remaining particles, assuming acceleration is properly initialized
-	for (i = 0; i < N; i++) {
-
-		node = find(&particles[i], node);
-
-		for (j = i + 1; j < N; j++) {
-			// Calculate r-vector
-			r_x = particles[i].x - particles[j].x;
-			r_y = particles[i].y - particles[j].y;
-			r = sqrt(r_x*r_x + r_y*r_y);
-			// Calculate denominator
-			denom = r + eps0;
-			denom = 1/(denom*denom*denom); // 1 msec faster than using /denom below
-			// Calculate acceleration (a_x, a_y == 0 at start due to calloc)
-			particles[i].a_x += particles[j].mass*r_x*denom;
-			particles[i].a_y += particles[j].mass*r_y*denom;
-			// Calculate corresponding acceleration for other particle, using
-			// Newton's third law
-			particles[j].a_x -= particles[i].mass*r_x*denom;
-			particles[j].a_y -= particles[i].mass*r_y*denom;
-		}
-		// Update velocity
-		particles[i].v_x += -G*delta_t*particles[i].a_x;
-		particles[i].v_y += -G*delta_t*particles[i].a_y;
-		// Update position
-		particles[i].x += delta_t*particles[i].v_x;
-		particles[i].y += delta_t*particles[i].v_y;
-	}
-}
-
-void computeForces(particle_t* particle, node_t* node, const double theta_max) {
-
-
-}
-
-void printParticles(particle_t* particles, int N) {
-	unsigned int i;
-	for (i = 0; i < N; i++) {
-		printf("Particle %d:\n", i);
-		printf("... (x, y) = (%lf, %lf)\n", particles[i].x, particles[i].y);
-		printf("... mass = %lf\n", particles[i].mass);
-	}
-}
-
-void printTotalMass(particle_t* particles, int N) {
-	unsigned int i;
-	double mass = 0;
-	for (i = 0; i < N; i++) {
-		mass += particles[i].mass;
-	}
-	printf("Total mass = %lf\n", mass);
-}
