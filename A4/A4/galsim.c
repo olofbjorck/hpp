@@ -75,7 +75,9 @@ void calculateForces(particle_t* __restrict particle,
 		const double G,
 		const double eps0,
 		const double delta_t,
-		const double theta_max) {
+		const double theta_max,
+		double* a_x,
+		double* a_y) {
 
 	// Get distance particle<->box
 	double r_x = particle->x - node->centerOfMass_x;
@@ -84,10 +86,12 @@ void calculateForces(particle_t* __restrict particle,
 
 	unsigned int i;
 	// Check theta and if box has children
-	if((2*node->sideHalf)/r > theta_max && node->children[0]) {
+	if (node->children[0] && (2*node->sideHalf)/r > theta_max) {
 		// Travel branch
 		for(i = 0; i < 4; i++)
-			calculateForces(particle, node->children[i], G, eps0, delta_t, theta_max);
+			calculateForces(particle, node->children[i],
+					G, eps0, delta_t, theta_max,
+					a_x, a_y);
 
 	} else {
 		// Treat as particle
@@ -95,8 +99,10 @@ void calculateForces(particle_t* __restrict particle,
 		double denom = r + eps0;
 		denom = 1/(denom*denom*denom);
 		// Acceleration
-		particle->a_x += node->mass*r_x*denom;
-		particle->a_y += node->mass*r_y*denom;
+		*a_x += node->mass*r_x*denom;
+		*a_y += node->mass*r_y*denom;
+		//particle->a_x += node->mass*r_x*denom;
+		//particle->a_y += node->mass*r_y*denom;
 	}
 }
 
@@ -148,6 +154,7 @@ void computeCenterOfMass(node_t* node) {
 		// else: do nothing, centerOfMass is 0 as default
 	}
 }
+
 
 void printParticles(particle_t* particles, int N) {
 	unsigned int i;

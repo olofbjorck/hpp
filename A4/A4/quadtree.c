@@ -177,7 +177,8 @@ node_t* find(particle_t* particle, node_t* node) {
 	if (node->children[0]) {
 		return find(particle, findCorrectChildForParticle(particle, node));
 	} else {
-
+		return node;
+		/*
 		if (node->particle &&
 			particle->x == node->centerOfMass_x &&
 			particle->y == node->centerOfMass_y) {
@@ -185,6 +186,6 @@ node_t* find(particle_t* particle, node_t* node) {
 		} else {
 			printf("%s\n", "ERROR: Particle could not be found");
 			return node;
-		}
+		}*/
 	}
 }
