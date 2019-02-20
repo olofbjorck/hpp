@@ -140,6 +140,8 @@ void computeCenterOfMass(node_t* node) {
 		// Allocate interior node particle
 		node->particle = (particle_t*) malloc(sizeof(particle_t));
 		node->particle->mass = 0.0;
+		node->particle->x = 0.0;
+		node->particle->y = 0.0;
 
 		unsigned int i;
 		for (i = 0; i < 4; i++) {
