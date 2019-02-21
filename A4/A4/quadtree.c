@@ -2,6 +2,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/*******************************************************************************
+STATIC FUNCTION DECLARATIONS
+*******************************************************************************/
+
+static inline void insert(node_t* __restrict node,
+		double x,
+		double y,
+		double mass);
+
+static void subdivide(node_t* node);
+
+static node_t* findCorrectChildForParticle(node_t* node,
+		double x,
+		double y);
+
+static void initialize(
+		node_t* node,
+		double xCenter, double yCenter, double sideHalf);
+
+/*******************************************************************************
+PUBLIC FUNCTION DEFINITIONS
+*******************************************************************************/
+
 void buildQuadtree(particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root) {
@@ -15,7 +38,31 @@ void buildQuadtree(particles_t* __restrict particles,
 	}
 }
 
-void insert(node_t* __restrict node,
+void freeQuadtree(node_t* node) {
+
+	if (node->children[0]) {
+		unsigned int i;
+		for (i = 0; i < 4; i++) {
+			freeQuadtree(node->children[i]);
+		}
+	}
+	free(node);
+}
+
+/*******************************************************************************
+STATIC FUNCTION DEFINITIONS
+*******************************************************************************/
+
+/**
+ * Inserts a particle into the quadtree, using recursion
+ *
+ * @param node		Recursive node of quadtree (call function using root)
+ * @param x			Particle x-coordinate
+ * @param y			Particle y-coordinate
+ * @param m			Particle mass
+ */
+//node_t* insert(particle_t* particle, node_t* node);
+static inline void insert(node_t* __restrict node,
 		double x, double y, double mass) {
 
 	if (node->mass) {
@@ -54,7 +101,12 @@ void insert(node_t* __restrict node,
 	}
 }
 
-void subdivide(node_t* node) {
+/**
+ * Subdivides this node (makes it an interior node) by giving it four children.
+ *
+ * @param node Node of quadtree
+ */
+static void subdivide(node_t* node) {
 
 	// Allocate children
 	unsigned int i;
@@ -85,7 +137,16 @@ void subdivide(node_t* node) {
 			node->sideHalf/2);
 }
 
-node_t* findCorrectChildForParticle(node_t* node, double x, double y) {
+/**
+ * Finds the child of @param node where @param particle shall be inserted.
+ *
+ * @param node		Recursive node of quadtree
+ * @param x			Particle x-coordinate
+ * @param y			Particle y-coordinate
+ *
+ * @return          A child of @param node where @param particle belongs
+ */
+static node_t* findCorrectChildForParticle(node_t* node, double x, double y) {
 
 	if (x >= node->xCenterOfNode) {
 		// Indicates R.H. side
@@ -109,18 +170,16 @@ node_t* findCorrectChildForParticle(node_t* node, double x, double y) {
 	}
 }
 
-void freeQuadtree(node_t* node) {
-
-	if (node->children[0]) {
-		unsigned int i;
-		for (i = 0; i < 4; i++) {
-			freeQuadtree(node->children[i]);
-		}
-	}
-	free(node);
-}
-
-void initialize(
+/**
+ * Initializes a node.
+ *
+ * @param node   Node of quadtree
+ * @param yTop   Top y-value of node
+ * @param yBot   Bottom y-value of node
+ * @param xLeft  Left x-value of node
+ * @param xRight Right x-value of node
+ */
+static void initialize(
 		node_t* node,
 		double xCenterOfNode, double yCenterOfNode, double sideHalf) {
 

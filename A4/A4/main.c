@@ -86,7 +86,6 @@ int main(int argc, char const *argv[]) {
 	//printTotalMass(particles, N);
 
 	// Simulate
-	// TODO remove this hårdy cody
 	simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
 	/*
 	if (graphics) {

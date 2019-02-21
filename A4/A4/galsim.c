@@ -1,9 +1,36 @@
 #include "galsim.h"
 
+/*******************************************************************************
+STATIC FUNCTION DECLARATIONS
+*******************************************************************************/
+
+static inline void updateParticles(particles_t* __restrict particles,
+		const int N,
+		node_t* __restrict root,
+		const double G,
+		const double eps0,
+		const double delta_t,
+		const double theta_max);
+
+static inline void calculateForces(double x, double y,
+		node_t* __restrict node,
+		const double G,
+		const double eps0,
+		const double delta_t,
+		const double theta_max,
+		double* __restrict a_x,
+		double* __restrict a_y);
+
+/* Debug funcs
 void printParticles(particles_t* particles, int N);
 double printQuadtree(node_t* node);
 void printTotalMass(particles_t* particles, int N);
 void printCorrectCOM(particles_t* particles, int N);
+*/
+
+/*******************************************************************************
+FUNCTION DEFINITIONS
+*******************************************************************************/
 
 // Simulate the movement of the particles
 void simulate(
@@ -73,7 +100,11 @@ void updateParticles(particle_t* __restrict particles,
 }
 */
 
-void updateParticles(particles_t* particles,
+/*******************************************************************************
+STATIC FUNCTION DEFINITIONS
+*******************************************************************************/
+
+static inline void updateParticles(particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root,
 		const double G,
@@ -81,11 +112,11 @@ void updateParticles(particles_t* particles,
 		const double delta_t,
 		const double theta_max) {
 
-	unsigned int i; // Loop iterators
 	double a_x; // x-acceleration
 	double a_y; // y-acceleration
 
 	// Loop remaining particles
+	unsigned int i;
 	for (i = 0; i < N; i++) {
 
 		// Set acceleration to zero
@@ -108,24 +139,24 @@ void updateParticles(particles_t* particles,
 }
 
 // Calculates force exerted on every particle, recursively
-void calculateForces(double x, double y,//particles_t* particle,
-		node_t* node,
+static inline void calculateForces(double x, double y,//particles_t* particle,
+		node_t* __restrict node,
 		const double G,
 		const double eps0,
 		const double delta_t,
 		const double theta_max,
-		double* a_x,
-		double* a_y) {
+		double* __restrict a_x,
+		double* __restrict a_y) {
 
 		// Get distance particle<->box
 		double r_x = x - node->xCenterOfMass;
 		double r_y = y - node->yCenterOfMass;
 		double r = sqrt(r_x*r_x + r_y*r_y);
 
-		unsigned int i;
 		// Check theta and if box has children
 		if (node->children[0] && (2*node->sideHalf)/r > theta_max) {
 			// Travel branch
+			unsigned int i;
 			for(i = 0; i < 4; i++) {
 				calculateForces(x, y, node->children[i],
 						G, eps0, delta_t, theta_max,
@@ -133,8 +164,6 @@ void calculateForces(double x, double y,//particles_t* particle,
 			}
 
 		} else {
-			////printf("%s\n", "else if node->particle");
-			// Treat as particle
 			// Calculate denominator
 			double denom = r + eps0;
 			denom = 1/(denom*denom*denom);

@@ -1,5 +1,9 @@
 #include "io.h"
 
+/*******************************************************************************
+FUNCTION DEFINITIONS
+*******************************************************************************/
+
 // Read data from file.
 int readData(
 		particles_t* __restrict particles,

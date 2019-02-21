@@ -31,20 +31,3 @@ void simulate(
 		const int nsteps,
 		const double delta_t,
 		const double theta_max);
-
-void updateParticles(particles_t* particles,
-		const int N,
-		node_t* __restrict root,
-		const double G,
-		const double eps0,
-		const double delta_t,
-		const double theta_max);
-
-void calculateForces(double x, double y,
-		node_t* node,
-		const double G,
-		const double eps0,
-		const double delta_t,
-		const double theta_max,
-		double* a_x,
-		double* a_y);
