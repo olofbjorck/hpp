@@ -6,14 +6,16 @@
 STATIC FUNCTION DECLARATIONS
 *******************************************************************************/
 
-static inline void insert(node_t* __restrict node,
+static inline void insert(
+		node_t* __restrict node,
 		double x,
 		double y,
 		double mass);
 
 static void subdivide(node_t* node);
 
-static node_t* findCorrectChildForParticle(node_t* node,
+static node_t* findCorrectChildForParticle(
+		node_t* node,
 		double x,
 		double y);
 
@@ -25,7 +27,8 @@ static void initialize(
 PUBLIC FUNCTION DEFINITIONS
 *******************************************************************************/
 
-void buildQuadtree(particles_t* __restrict particles,
+void buildQuadtree(
+		particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root) {
 
@@ -62,8 +65,11 @@ STATIC FUNCTION DEFINITIONS
  * @param m			Particle mass
  */
 //node_t* insert(particle_t* particle, node_t* node);
-static inline void insert(node_t* __restrict node,
-		double x, double y, double mass) {
+static inline void insert(
+		node_t* __restrict node,
+		double x,
+		double y,
+		double mass) {
 
 	if (node->mass) {
 		// If node contains particle -> is in interior or is occupied leaf
@@ -181,7 +187,9 @@ static node_t* findCorrectChildForParticle(node_t* node, double x, double y) {
  */
 static void initialize(
 		node_t* node,
-		double xCenterOfNode, double yCenterOfNode, double sideHalf) {
+		double xCenterOfNode,
+		double yCenterOfNode,
+		double sideHalf) {
 
 	// Initialize children to NULL
 	unsigned int i;

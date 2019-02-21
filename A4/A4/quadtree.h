@@ -14,7 +14,8 @@
  * @param N			Total number of particles
  * @param root		Root node of quadtree
  */
-void buildQuadtree(particles_t* __restrict particles,
+void buildQuadtree(
+		particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root);
 

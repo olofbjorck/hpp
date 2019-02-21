@@ -4,7 +4,8 @@
 STATIC FUNCTION DECLARATIONS
 *******************************************************************************/
 
-static inline void updateParticles(particles_t* __restrict particles,
+static inline void updateParticles(
+		particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root,
 		const double G,
@@ -12,7 +13,9 @@ static inline void updateParticles(particles_t* __restrict particles,
 		const double delta_t,
 		const double theta_max);
 
-static inline void calculateForces(double x, double y,
+static inline void calculateForces(
+		double x,
+		double y,
 		node_t* __restrict node,
 		const double G,
 		const double eps0,
@@ -56,7 +59,6 @@ void simulate(
 		freeQuadtree(root);
 	}
 }
-
 
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
@@ -163,7 +165,6 @@ static inline void calculateForces(double x, double y,//particles_t* particle,
 		}
 }
 
-
 // Show particles graphically
 static void showGraphics(
 		particles_t* __restrict particles,
@@ -180,6 +181,9 @@ static void showGraphics(
 	usleep(3000);	// TODO make variable fps
 }
 
+/*******************************************************************************
+DEBUG FUNCTIONS
+*******************************************************************************/
 
 /*
 double printQuadtree(node_t* node) {
