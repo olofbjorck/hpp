@@ -2,7 +2,7 @@
 
 // Simulate the movement of the particles
 void simulate(
-		particle_t* __restrict particles,
+		particles_t* __restrict particles,
 		const int N,
 		const double G,
 		const double eps0,
@@ -13,22 +13,23 @@ void simulate(
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		////printf("%s\n", "Allocating root");
+		//printf("%s\n", "Allocating root");
 		node_t* root = (node_t*) malloc(sizeof(node_t));
-		//printf("%s\n", "Building quadtree");
+		printf("%s\n", "Building quadtree");
 		buildQuadtree(particles, N, root);
 		//printf("%s\n", "Computing center of mass");
-		computeCenterOfMass(root);
+		//computeCenterOfMass(root);
 		//printf("%s\n", "Updating particles");
-		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
-		////printf("root->mass = %lf\n", root->mass);
-		////printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
-		////printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
-		//printf("%s\n", "Freeing quadtree");
+		//updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
+		//printf("root->mass = %lf\n", root->mass);
+		//printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
+		//printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
+		printf("%s\n", "Freeing quadtree");
 		freeQuadtree(root);
 	}
 }
 
+/*
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
 		particle_t* __restrict particles,
@@ -167,13 +168,13 @@ void computeCenterOfMass(node_t* node) {
 	// else: Node is leaf
 	} else {
 		// If node is unoccupied leaf
-		/*if (!node->particle) {
-			// Allocate empty leaf particle
-			node->particle = (particle_t*) malloc(sizeof(particle_t));
-			node->particle->mass = 0.0;
-			node->particle->x = 0.0;
-			node->particle->y = 0.0;
-		}*/
+//		if (!node->particle) {
+//			// Allocate empty leaf particle
+//			node->particle = (particle_t*) malloc(sizeof(particle_t));
+//			node->particle->mass = 0.0;
+//			node->particle->x = 0.0;
+//			node->particle->y = 0.0;
+//		}
 		// else: do nothing, centerOfMass is 0 as default
 	}
 }
@@ -196,3 +197,4 @@ void printTotalMass(particle_t* particles, int N) {
 	}
 	//printf("Total mass = %lf\n", mass);
 }
+*/

@@ -9,14 +9,18 @@ typedef struct particles {
 } particles_t;
 
 typedef struct node {
-	double xCenterOfMass, yCenterOfMass;
+	// [0] == childNorthWest, [1] == childNorthEast,
+	// [2] == childSouthWest, [3] == childSouthEast
+	struct node* children[4];
+
+	// "Particle" position and mass
+	double xCenterOfMass;
+	double yCenterOfMass;
 	double mass;
 
+	// Node location and size
 	double xCenterOfNode;
 	double yCenterOfNode;
 	double sideHalf;
 
-	// [0] == childNorthWest, [1] == childNorthEast,
-	// [2] == childSouthWest, [3] == childSouthEast
-	struct node* children[4];
 } node_t;

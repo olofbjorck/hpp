@@ -23,9 +23,9 @@
 #include <stdlib.h>
 #include "modules.h"
 //#include "graphics.h"
-//#include "galsim.h"
+#include "galsim.h"
 #include "io.h"
-//#include "quadtree.h"
+#include "quadtree.h"
 
 /**
  * Main function
@@ -81,11 +81,14 @@ int main(int argc, char const *argv[]) {
 	printf("%s\n", "Reading data");
 	if (readData(particles, brightness, filename, N))
 		return 1;
-/*
+
 	//printParticles(particles, N);
-	printTotalMass(particles, N);
+	//printTotalMass(particles, N);
 
 	// Simulate
+	// TODO remove this hårdy cody
+	simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
+	/*
 	if (graphics) {
 		// With graphics
 		simulateWithGraphics(
@@ -95,12 +98,18 @@ int main(int argc, char const *argv[]) {
 		// Movement only
 		simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
 	}
-*/
+	*/
+
 	// Write new state of particles to file
 	if (writeOutput(particles, brightness, N))
 		return 1;
 
 	// Free memory
+	free(particles->x);
+	free(particles->y);
+	free(particles->v_x);
+	free(particles->v_y);
+	free(particles->mass);
 	free(particles);
 	free(brightness);
 
