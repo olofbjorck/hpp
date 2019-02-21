@@ -15,27 +15,12 @@ void simulate(
 		const double delta_t,
 		const double theta_max) {
 
-
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
 		////printf("%s\n", "Allocating root");
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
-
-		printTotalMass(particles, N);
-		printCorrectCOM(particles, N);
-		printf("Tree total mass = %lf\n", printQuadtree(root));
-
-		////printf("%s\n", "Updating particles");
-		//updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
-		////printf("root->mass = %lf\n", root->mass);
-		////printf("root->centerOfMass_x = %lf\n", root->centerOfMass_x);
-		////printf("root->centerOfMass_y = %lf\n", root->centerOfMass_y);
-		if (i == 0)  {
-			printParticles(particles, N);
-			printf("COM(x, y) = (%lf, %lf)\n", root->xCenterOfMass, root->yCenterOfMass);
-			//printf("root->mass = %lf\n", root->mass);
-		}
+		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
 		freeQuadtree(root);
 	}
 }
@@ -86,9 +71,44 @@ void updateParticles(particle_t* __restrict particles,
 
 
 }
+*/
+
+void updateParticles(particles_t* particles,
+		const int N,
+		node_t* __restrict root,
+		const double G,
+		const double eps0,
+		const double delta_t,
+		const double theta_max) {
+
+	unsigned int i; // Loop iterators
+	double a_x; // x-acceleration
+	double a_y; // y-acceleration
+
+	// Loop remaining particles
+	for (i = 0; i < N; i++) {
+
+		// Set acceleration to zero
+		a_x = 0.0;
+		a_y = 0.0;
+
+		// Update acceleration
+		calculateForces(particles->x[i], particles->y[i], root,
+				G, eps0, delta_t, theta_max,
+				&a_x, &a_y);
+
+		// Update velocity
+		particles->v_x[i] += -G*delta_t*a_x;
+		particles->v_y[i] += -G*delta_t*a_y;
+
+		// Update position
+		particles->x[i] += delta_t*particles->v_x[i];
+		particles->y[i] += delta_t*particles->v_y[i];
+	}
+}
 
 // Calculates force exerted on every particle, recursively
-void calculateForces(particle_t* particle,
+void calculateForces(double x, double y,//particles_t* particle,
 		node_t* node,
 		const double G,
 		const double eps0,
@@ -97,20 +117,17 @@ void calculateForces(particle_t* particle,
 		double* a_x,
 		double* a_y) {
 
-	if (node->particle) {
 		// Get distance particle<->box
-		////printf("%s\n", "Calculating distance");
-		double r_x = particle->x - node->particle->x;
-		double r_y = particle->y - node->particle->y;
+		double r_x = x - node->xCenterOfMass;
+		double r_y = y - node->yCenterOfMass;
 		double r = sqrt(r_x*r_x + r_y*r_y);
 
 		unsigned int i;
 		// Check theta and if box has children
-		////printf("%s\n", "Checking theta");
 		if (node->children[0] && (2*node->sideHalf)/r > theta_max) {
 			// Travel branch
 			for(i = 0; i < 4; i++) {
-				calculateForces(particle, node->children[i],
+				calculateForces(x, y, node->children[i],
 						G, eps0, delta_t, theta_max,
 						a_x, a_y);
 			}
@@ -122,14 +139,11 @@ void calculateForces(particle_t* particle,
 			double denom = r + eps0;
 			denom = 1/(denom*denom*denom);
 			// Acceleration
-			*a_x += node->particle->mass*r_x*denom;
-			*a_y += node->particle->mass*r_y*denom;
-			//particle->a_x += node->mass*r_x*denom;
-			//particle->a_y += node->mass*r_y*denom;
+			*a_x += node->mass*r_x*denom;
+			*a_y += node->mass*r_y*denom;
 		}
-	}
 }
-
+/*
 
 // Show particles graphically
 void showGraphics(
@@ -146,7 +160,7 @@ void showGraphics(
 	Refresh();
 	usleep(3000);	// TODO make variable fps
 }
-*/
+
 
 
 double printQuadtree(node_t* node) {
@@ -195,3 +209,4 @@ void printCorrectCOM(particles_t* particles, int N) {
 	y = y/mass;
 	printf("Particles COM (x, y) = (%lf, %lf)\n", x, y);
 }
+*/
