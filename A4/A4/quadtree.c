@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 /*******************************************************************************
-STATIC FUNCTION DECLARATIONS
-*******************************************************************************/
+  STATIC FUNCTION DECLARATIONS
+ *******************************************************************************/
 
 static inline void insert(
 		node_t* __restrict node,
@@ -24,8 +24,8 @@ static void initialize(
 		double xCenter, double yCenter, double sideHalf);
 
 /*******************************************************************************
-PUBLIC FUNCTION DEFINITIONS
-*******************************************************************************/
+  PUBLIC FUNCTION DEFINITIONS
+ *******************************************************************************/
 
 void buildQuadtree(
 		particles_t* __restrict particles,
@@ -53,8 +53,8 @@ void freeQuadtree(node_t* node) {
 }
 
 /*******************************************************************************
-STATIC FUNCTION DEFINITIONS
-*******************************************************************************/
+  STATIC FUNCTION DEFINITIONS
+ *******************************************************************************/
 
 /**
  * Inserts a particle into the quadtree, using recursion
@@ -62,7 +62,7 @@ STATIC FUNCTION DEFINITIONS
  * @param node		Recursive node of quadtree (call function using root)
  * @param x			Particle x-coordinate
  * @param y			Particle y-coordinate
- * @param m			Particle mass
+ * @param mass		Particle mass
  */
 static inline void insert(
 		node_t* __restrict node,
@@ -70,10 +70,23 @@ static inline void insert(
 		double y,
 		double mass) {
 
-	if (node->mass) {
-		// If node contains particle -> is in interior or is occupied leaf
-		if (node->children[0] == NULL) {
-			// If node does not have children -> is occupied leaf -> subdivide
+	if(node->children[0]) {
+		// If node has children -> is interior -> recurse on child
+		insert(findCorrectChildForParticle(node, x, y),
+				x, y, mass);
+
+		// Update center of mass and mass of node due to new particle
+		node->xCenterOfMass = (node->xCenterOfMass * node->mass
+				+ x * mass)/(node->mass + mass);
+		node->yCenterOfMass = (node->yCenterOfMass * node->mass
+				+ y * mass)/(node->mass + mass);
+		node->mass += mass;
+
+	} else {
+		// If node does not have children -> is a leaf
+
+		if(node->mass) {
+			// If leaf is already occupied -> subdivide
 			subdivide(node);
 
 			// Then, move input to appropriate child
@@ -85,24 +98,19 @@ static inline void insert(
 						node->yCenterOfMass),
 					node->xCenterOfMass, node->yCenterOfMass, node->mass);
 
-		} else { /* else: node has children:
-					-> is in interior -> can safely move to appropriate child */
-			insert(findCorrectChildForParticle(node, x, y),
-					x, y, mass);
+			// Update center of mass and mass of node due to new particle
+			node->xCenterOfMass = (node->xCenterOfMass * node->mass
+					+ x * mass)/(node->mass + mass);
+			node->yCenterOfMass = (node->yCenterOfMass * node->mass
+					+ y * mass)/(node->mass + mass);
+			node->mass += mass;
+
+		} else {
+			// Leaf is not occupied -> simply add particle
+			node->xCenterOfMass = x;
+			node->yCenterOfMass = y;
+			node->mass = mass;
 		}
-
-		// Update center of mass and mass of node due to new particle
-		node->xCenterOfMass = (node->xCenterOfMass * node->mass
-								+ x * mass)/(node->mass + mass);
-		node->yCenterOfMass = (node->yCenterOfMass * node->mass
-								+ y * mass)/(node->mass + mass);
-		node->mass += mass;
-
-	} else {
-		// Node is empty leaf -> add particle
-		node->xCenterOfMass = x;
-		node->yCenterOfMass = y;
-		node->mass = mass;
 	}
 }
 
@@ -111,7 +119,7 @@ static inline void insert(
  *
  * @param node Node of quadtree
  */
-static void subdivide(node_t* node) {
+static inline void subdivide(node_t* node) {
 
 	// Allocate children
 	unsigned int i;
