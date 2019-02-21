@@ -50,7 +50,6 @@ void simulate(
 
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
-		////printf("%s\n", "Allocating root");
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
 		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
