@@ -18,63 +18,39 @@ void buildQuadtree(particles_t* __restrict particles,
 void insert(node_t* __restrict node,
 		double x, double y, double mass) {
 
-	//printf("%s\n", "Inside insert function");
 	if (node->mass) {
-
-		//printf("in node-mass\n");
-		// If node contains particle
-		// -> is in interior or is occupied leaf
+		// If node contains particle -> is in interior or is occupied leaf
 		if (node->children[0] == NULL) {
-			//printf("in node->children\n");
-			// If node does not have children
-			// -> is occupied leaf
-			// -> subdivide node
-			//printf("subdividing\n");
+			// If node does not have children -> is occupied leaf -> subdivide
 			subdivide(node);
 
 			// Then, move input to appropriate child
-			//printf("inserting new node\n");
-
 			insert(findCorrectChildForParticle(node, x, y),
 					x, y, mass);
-
 			// Then, move node values to appropriate child
-			//printf("moving root-ish node\n");
 			insert(findCorrectChildForParticle(node,
 						node->xCenterOfMass,
 						node->yCenterOfMass),
 					node->xCenterOfMass, node->yCenterOfMass, node->mass);
 
-			// Make this node empty
-			node->xCenterOfMass = 0.0;
-			node->yCenterOfMass = 0.0;
-			//node->mass += mass;
-			//node->mass = 0.0;
-
-		} else {
-			// else node has children
-			// -> is in interior
-			// -> can safely move to appropriate child
-			//printf("recursing on children\n");
+		} else { /* else: node has children:
+					-> is in interior -> can safely move to appropriate child */
 			insert(findCorrectChildForParticle(node, x, y),
 					x, y, mass);
-			node->mass += mass;
-			// Add to centerOfMass
-			/*
-			node->xCenterOfMass += node->children[i]->xCenterOfMass *
-									node->children[i]->mass;
-			node->yCenterOfMass += node->children[i]->yCenterOfMass *
-									node->children[i]->mass;
-									*/
 		}
 
+		// Update center of mass and mass of node due to all contained particles
+		node->xCenterOfMass = (node->xCenterOfMass * node->mass +
+								x * mass)/(node->mass + mass);
+		node->yCenterOfMass = (node->yCenterOfMass * node->mass +
+								y * mass)/(node->mass + mass);
+		node->mass += mass;
+
 	} else {
-		// Node is empty leaf
-		// -> add node
+		// Node is empty leaf -> add particle
 		node->xCenterOfMass = x;
 		node->yCenterOfMass = y;
 		node->mass = mass;
-		//printf("Node was empty, added (x, y) = (%lf, %lf), mass = %lf\n\n", x, y, mass);
 	}
 }
 
@@ -163,5 +139,4 @@ void initialize(
 	node->xCenterOfNode = xCenterOfNode;
 	node->yCenterOfNode = yCenterOfNode;
 	node->sideHalf = sideHalf;
-
 }

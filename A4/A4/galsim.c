@@ -25,9 +25,7 @@ void simulate(
 		printTotalMass(particles, N);
 		printCorrectCOM(particles, N);
 		printf("Tree total mass = %lf\n", printQuadtree(root));
-		////printf("%s\n", "Computing center of mass");
-		computeCenterOfMass(root);
-		printf("Tree total mass = %lf\n", printQuadtree(root));
+
 		////printf("%s\n", "Updating particles");
 		//updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
 		////printf("root->mass = %lf\n", root->mass);
@@ -151,44 +149,13 @@ void showGraphics(
 */
 
 
-void computeCenterOfMass(node_t* node) {
-
-	// If node has children (node is interior node)
-	if (node->children[0]) {
-		double mass = 0.0;
-		unsigned int i;
-		for (i = 0; i < 4; i++) {
-
-			// Recurse
-			computeCenterOfMass(node->children[i]);
-
-			// Optimization? Without check, redundant computations with 0.0
-			//if (node->children[i]->mass != 0.0) {
-				// Compute mass
-				//mass += node->children[i]->mass;
-
-				// Add to centerOfMass
-				node->xCenterOfMass += node->children[i]->xCenterOfMass *
-									 	node->children[i]->mass;
-				node->yCenterOfMass += node->children[i]->yCenterOfMass *
-									 	node->children[i]->mass;
-			//}
-		}
-		//node->mass = mass;
-		// Compute center of mass
-		//node->mass = mass;
-		node->xCenterOfMass = node->xCenterOfMass/node->mass;
-		node->yCenterOfMass = node->yCenterOfMass/node->mass;
-	}
-}
-
-
 double printQuadtree(node_t* node) {
 	double mass = node->mass;
 	if (node->children[0]) {
 		unsigned int i;
 		for (i = 0; i < 4; i++) {
-			mass += printQuadtree(node->children[i]);
+			if (!node->children[0]) {
+			mass += printQuadtree(node->children[i]);}
 		}
 	}
 	//printf("mass = %lf, (x, y) = (%lf, %lf)\n", node->mass, node->xCenterOfMass, node->yCenterOfMass);
