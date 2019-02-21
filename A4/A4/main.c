@@ -79,7 +79,6 @@ int main(int argc, char const *argv[]) {
 	}
 
 	// Read data
-	printf("%s\n", "Reading data");
 	if (readData(particles, brightness, filename, N))
 		return 1;
 
