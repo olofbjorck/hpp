@@ -64,7 +64,6 @@ STATIC FUNCTION DEFINITIONS
  * @param y			Particle y-coordinate
  * @param m			Particle mass
  */
-//node_t* insert(particle_t* particle, node_t* node);
 static inline void insert(
 		node_t* __restrict node,
 		double x,
@@ -92,11 +91,11 @@ static inline void insert(
 					x, y, mass);
 		}
 
-		// Update center of mass and mass of node due to all contained particles
-		node->xCenterOfMass = (node->xCenterOfMass * node->mass +
-								x * mass)/(node->mass + mass);
-		node->yCenterOfMass = (node->yCenterOfMass * node->mass +
-								y * mass)/(node->mass + mass);
+		// Update center of mass and mass of node due to new particle
+		node->xCenterOfMass = (node->xCenterOfMass * node->mass
+								+ x * mass)/(node->mass + mass);
+		node->yCenterOfMass = (node->yCenterOfMass * node->mass
+								+ y * mass)/(node->mass + mass);
 		node->mass += mass;
 
 	} else {
@@ -154,9 +153,9 @@ static void subdivide(node_t* node) {
  */
 static node_t* findCorrectChildForParticle(node_t* node, double x, double y) {
 
-	if (x >= node->xCenterOfNode) {
+	if (x > node->xCenterOfNode) {
 		// Indicates R.H. side
-		if (y >= node->yCenterOfNode) {
+		if (y > node->yCenterOfNode) {
 			// Indicates top part
 			return node->children[1];
 		} else {
@@ -166,7 +165,7 @@ static node_t* findCorrectChildForParticle(node_t* node, double x, double y) {
 
 	} else {
 		// Indicates L.H. side
-		if(y >= node->yCenterOfNode) {
+		if(y > node->yCenterOfNode) {
 			// Indicates top part
 			return node->children[0];
 		} else {

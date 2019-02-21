@@ -13,7 +13,7 @@ static inline void updateParticles(
 		const double delta_t,
 		const double theta_max);
 
-static inline void calculateForces(
+static void calculateForces(
 		double x,
 		double y,
 		node_t* __restrict node,
@@ -96,7 +96,8 @@ void simulateWithGraphics(
 STATIC FUNCTION DEFINITIONS
 *******************************************************************************/
 
-static inline void updateParticles(particles_t* __restrict particles,
+static inline void updateParticles(
+		particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root,
 		const double G,
@@ -115,7 +116,7 @@ static inline void updateParticles(particles_t* __restrict particles,
 		a_x = 0.0;
 		a_y = 0.0;
 
-		// Update acceleration
+		//* Update acceleration
 		calculateForces(particles->x[i], particles->y[i], root,
 				G, eps0, delta_t, theta_max,
 				&a_x, &a_y);
@@ -131,7 +132,7 @@ static inline void updateParticles(particles_t* __restrict particles,
 }
 
 // Calculates force exerted on every particle, recursively
-static inline void calculateForces(double x, double y,//particles_t* particle,
+static void calculateForces(double x, double y,//particles_t* particle,
 		node_t* __restrict node,
 		const double G,
 		const double eps0,
@@ -146,7 +147,8 @@ static inline void calculateForces(double x, double y,//particles_t* particle,
 		double r = sqrt(r_x*r_x + r_y*r_y);
 
 		// Check theta and if box has children
-		if (node->children[0] && (2*node->sideHalf)/r > theta_max) {
+		if (node->children[0] &&
+			(node->sideHalf + node->sideHalf)/r > theta_max) {
 			// Travel branch
 			unsigned int i;
 			for(i = 0; i < 4; i++) {

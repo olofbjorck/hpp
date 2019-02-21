@@ -8,6 +8,8 @@
 // ./compare_gal_files 3000 ../A4/result.gal ../ref_output_data/ellipse_N_03000_after100steps.gal
 // ../compare_gal_files/compare_gal_files 3000 ../A4/result.gal ../ref_output_data/ellipse_N_03000_after100steps.gal
 
+// ../compare_gal_files/compare_gal_files 2000 ../A4/result.gal ../ref_output_data/ellipse_N_02000_after200steps.gal
+
 // REQUIRES PRE-COMPILATION OF compare_gal_files.c: REMEMBER TO REMOVE BEFORE HANDIN
 // ./galsim 3000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
 // ../compare_gal_files/compare_gal_files 3000 result.gal ../ref_output_data/ellipse_N_03000_after100steps.gal
