@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "modules.h"
-//#include "graphics.h"
+#include "graphics.h"
 #include "galsim.h"
 #include "io.h"
 #include "quadtree.h"
@@ -71,6 +71,7 @@ int main(int argc, char const *argv[]) {
 	particles->mass = (double*) malloc(N * sizeof(double));
 	double* brightness = (double*) malloc(N * sizeof(double));
 
+	// Check malloc
 	if (!(particles && brightness)) {
 		// Program fail, exit
 		printf("ERROR: Malloc failure");
@@ -82,22 +83,16 @@ int main(int argc, char const *argv[]) {
 	if (readData(particles, brightness, filename, N))
 		return 1;
 
-	//printParticles(particles, N);
-	//printTotalMass(particles, N);
-
 	// Simulate
-	simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
-	/*
 	if (graphics) {
-		// With graphics
+		// Simulate with graphics
 		simulateWithGraphics(
 				particles, N, G, eps0, nsteps, delta_t, theta_max,
 				program, windowSize, circleRadius, circleColour);
 	} else {
-		// Movement only
+		// Simulate movement only (only calculations)
 		simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
 	}
-	*/
 
 	// Write new state of particles to file
 	if (writeOutput(particles, brightness, N))

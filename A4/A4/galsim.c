@@ -21,6 +21,12 @@ static inline void calculateForces(double x, double y,
 		double* __restrict a_x,
 		double* __restrict a_y);
 
+static void showGraphics(
+		particles_t* __restrict particles,
+		const int N,
+		const double circleRadius,
+		const int circleColour);
+
 /* Debug funcs
 void printParticles(particles_t* particles, int N);
 double printQuadtree(node_t* node);
@@ -52,10 +58,10 @@ void simulate(
 	}
 }
 
-/*
+
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
-		particle_t* __restrict particles,
+		particles_t* __restrict particles,
 		const int N,
 		const double G,
 		const double eps0,
@@ -75,7 +81,6 @@ void simulateWithGraphics(
 	for (i = 0; i < nsteps; i++) {
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
-		computeCenterOfMass(root);
 		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
 		freeQuadtree(root);
 		showGraphics(particles, N, circleRadius, circleColour);
@@ -85,20 +90,6 @@ void simulateWithGraphics(
 	FlushDisplay();
 	CloseDisplay();
 }
-
-// See galsim.h for definition
-// Updates particle positions
-void updateParticles(particle_t* __restrict particles,
-		const int N,
-		node_t* __restrict root,
-		const double G,
-		const double eps0,
-		const double delta_t,
-		const double theta_max) {
-
-
-}
-*/
 
 /*******************************************************************************
 STATIC FUNCTION DEFINITIONS
@@ -172,11 +163,11 @@ static inline void calculateForces(double x, double y,//particles_t* particle,
 			*a_y += node->mass*r_y*denom;
 		}
 }
-/*
+
 
 // Show particles graphically
-void showGraphics(
-		particle_t* __restrict particles,
+static void showGraphics(
+		particles_t* __restrict particles,
 		const int N,
 		const double circleRadius,
 		const int circleColour) {
@@ -184,14 +175,14 @@ void showGraphics(
 	ClearScreen();
 	unsigned int i;
 	for(i = 0; i < N; i++) {
-		DrawCircle(particles[i].x, particles[i].y, 1, 1, circleRadius, circleColour);
+		DrawCircle(particles->x[i], particles->y[i], 1, 1, circleRadius, circleColour);
 	}
 	Refresh();
 	usleep(3000);	// TODO make variable fps
 }
 
 
-
+/*
 double printQuadtree(node_t* node) {
 	double mass = node->mass;
 	if (node->children[0]) {

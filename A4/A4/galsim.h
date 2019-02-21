@@ -31,3 +31,17 @@ void simulate(
 		const int nsteps,
 		const double delta_t,
 		const double theta_max);
+
+// Simulate the movement of the particles and show graphically
+void simulateWithGraphics(
+		particles_t* __restrict particles,
+		const int N,
+		const double G,
+		const double eps0,
+		const int nsteps,
+		const double delta_t,
+		const double theta_max,
+		const char* program,
+		const unsigned int windowSize,
+		const float circleRadius,
+		const float circleColour);
