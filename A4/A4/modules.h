@@ -11,7 +11,7 @@ typedef struct particles {
 typedef struct node {
 	// [0] == childNorthWest, [1] == childNorthEast,
 	// [2] == childSouthWest, [3] == childSouthEast
-	struct node* children[4];
+	struct node* children;
 
 	// "Particle" position and mass
 	double xCenterOfMass;

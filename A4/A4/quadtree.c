@@ -43,13 +43,13 @@ void buildQuadtree(
 
 void freeQuadtree(node_t* node) {
 
-	if (node->children[0]) {
+	if (node->children) {
 		unsigned int i;
 		for (i = 0; i < 4; i++) {
-			freeQuadtree(node->children[i]);
+			freeQuadtree(node->children+i);
 		}
+		free(node->children);
 	}
-	free(node);
 }
 
 /*******************************************************************************
@@ -70,7 +70,7 @@ static inline void insert(
 		double y,
 		double mass) {
 
-	if(node->children[0]) {
+	if(node->children) {
 		// If node has children -> is interior -> recurse on child
 		insert(findCorrectChildForParticle(node, x, y),
 				x, y, mass);
@@ -124,10 +124,8 @@ static inline void insert(
 static inline void subdivide(node_t* node) {
 
 	// Allocate children
-	unsigned int i;
-	for (i = 0; i < 4; i++) {
-		node->children[i] = (node_t*) malloc(sizeof(node_t));
-	}
+	node_t* children = (node_t*) malloc(4 * sizeof(node_t));
+	node->children = children;
 
 	// Calculate side length and all centers beforehand
 	const double sideQuarter = node->sideHalf/2;
@@ -138,22 +136,22 @@ static inline void subdivide(node_t* node) {
 
 	// Initialize children
 	initialize(
-			node->children[0],
+			node->children,
 			xLeft,
 			yTop,
 			sideQuarter);
 	initialize(
-			node->children[1],
+			node->children+1,
 			xRight,
 			yTop,
 			sideQuarter);
 	initialize(
-			node->children[2],
+			node->children+2,
 			xLeft,
 			yBot,
 			sideQuarter);
 	initialize(
-			node->children[3],
+			node->children+3,
 			xRight,
 			yBot,
 			sideQuarter);
@@ -174,20 +172,20 @@ static node_t* findCorrectChildForParticle(node_t* node, double x, double y) {
 		// Indicates R.H. side
 		if (y > node->yCenterOfNode) {
 			// Indicates top part
-			return node->children[1];
+			return node->children+1;
 		} else {
 			// Indicates bottom part
-			return node->children[3];
+			return node->children+3;
 		}
 
 	} else {
 		// Indicates L.H. side
 		if(y > node->yCenterOfNode) {
 			// Indicates top part
-			return node->children[0];
+			return node->children;
 		} else {
 			// Indicates bottom part
-			return node->children[2];
+			return node->children+2;
 		}
 	}
 }
@@ -208,10 +206,7 @@ static void initialize(
 		double sideHalf) {
 
 	// Initialize children to NULL
-	unsigned int i;
-	for (i = 0; i < 4; i++) {
-		node->children[i] = NULL;
-	}
+	node->children = NULL;
 
 	// Initialize node particle info
 	node->xCenterOfMass = 0.0;

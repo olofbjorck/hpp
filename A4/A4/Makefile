@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -O3 -march=native -funroll-loops -ffast-math
+CFLAGS = -Wall -O3 -march=native -funroll-loops -ffast-math -ftree-vectorize
+CFLAGS += -fopt-info-vec
 #CFLAGS += -g
 LDFLAGS = -L/opt/X11/lib -lX11 -lm
 

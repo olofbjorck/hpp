@@ -34,7 +34,6 @@
  *
  */
 int main(int argc, char const *argv[]) {
-
 	// Check proper number of input arguments
 	if (argc != 7) {
 		printf("%s\n", "Input error: Expected 6 input arguments");
@@ -49,6 +48,17 @@ int main(int argc, char const *argv[]) {
 	const double delta_t = atof(argv[4]); // Timestep
 	const double theta_max = atof(argv[5]);
 	const int graphics = atoi(argv[6]); // Graphics on/off as 1/0
+
+	// DEBUG
+	/*
+	const char* program = "galsim";
+	const int N = 3000;
+	const char* filename = "../input_data/ellipse_N_03000.gal";
+	const int nsteps = 100;
+	const double delta_t = 0.00001;
+	const double theta_max = 0.5;
+	const int graphics = 0;
+	*/
 
 	// Define some constants
 	const double G = 100.0/N; // Gravitational constant

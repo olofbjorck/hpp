@@ -151,11 +151,11 @@ static inline void calculateForces(const double x, const double y,
 		double theta = (node->sideHalf + node->sideHalf)/r;
 
 		// Check if box has children, then theta
-		if (node->children[0] && theta > theta_max) {
+		if (node->children && theta > theta_max) {
 			// Travel branch
 			unsigned int i;
 			for(i = 0; i < 4; i++) {
-				calculateForces(x, y, node->children[i],
+				calculateForces(x, y, node->children+i,
 						G, eps0, delta_t, theta_max,
 						a_x, a_y);
 			}
