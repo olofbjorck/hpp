@@ -43,8 +43,8 @@ void subdivide(node_t* node);
  * Finds the child of @param node where @param particle shall be inserted.
  *
  * @param node		Recursive node of quadtree
- * @param x			Particle x-coordinate	
- * @param y			Particle y-coordinate	
+ * @param x			Particle x-coordinate
+ * @param y			Particle y-coordinate
  *
  * @return          A child of @param node where @param particle belongs
  */
@@ -57,7 +57,7 @@ node_t* findCorrectChildForParticle(node_t* node,
  *
  * @param node Recursive node of quadtree (call function using root)
  */
-void printQuadtree(node_t* node);
+double printQuadtree(node_t* node);
 
 /**
  * Frees every sub-node of node in quadtree

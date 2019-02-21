@@ -32,3 +32,4 @@ void simulate(
 		const double delta_t,
 		const double theta_max);
 
+void computeCenterOfMass(node_t* node);
