@@ -44,11 +44,6 @@ int main(int argc, char const *argv[]) {
 	// Read input from command line
 	const char* program = argv[0];	// Used to return graphics errors
 	const int N = atoi(argv[1]); // Nr of stars to simulate
-	if (N < 2) {
-		// Fail. What is there to simulate?
-		printf("%s\n", "ERROR: N < 2, what is there to simulate?");
-		return 1;
-	}
 	const char* filename = argv[2]; // Filename
 	const int nsteps = atoi(argv[3]); // Nr of filesteps
 	const double delta_t = atof(argv[4]); // Timestep

@@ -115,9 +115,11 @@ static inline void updateParticles(
 		// Set acceleration to zero
 		a_x = 0.0;
 		a_y = 0.0;
+		const double x = particles->x[i];
+		const double y = particles->y[i];
 
 		//* Update acceleration
-		calculateForces(particles->x[i], particles->y[i], root,
+		calculateForces(x, y, root,
 				G, eps0, delta_t, theta_max,
 				&a_x, &a_y);
 
@@ -132,7 +134,7 @@ static inline void updateParticles(
 }
 
 // Calculates force exerted on every particle, recursively
-static void calculateForces(double x, double y,//particles_t* particle,
+static inline void calculateForces(const double x, const double y,
 		node_t* __restrict node,
 		const double G,
 		const double eps0,
@@ -146,9 +148,10 @@ static void calculateForces(double x, double y,//particles_t* particle,
 		double r_y = y - node->yCenterOfMass;
 		double r = sqrt(r_x*r_x + r_y*r_y);
 
-		// Check theta and if box has children
-		if (node->children[0] &&
-			(node->sideHalf + node->sideHalf)/r > theta_max) {
+		double theta = (node->sideHalf + node->sideHalf)/r;
+
+		// Check if box has children, then theta
+		if (node->children[0] && theta > theta_max) {
 			// Travel branch
 			unsigned int i;
 			for(i = 0; i < 4; i++) {
@@ -156,7 +159,6 @@ static void calculateForces(double x, double y,//particles_t* particle,
 						G, eps0, delta_t, theta_max,
 						a_x, a_y);
 			}
-
 		} else {
 			// Calculate denominator
 			double denom = r + eps0;

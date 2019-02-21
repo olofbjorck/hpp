@@ -17,7 +17,7 @@ static void subdivide(node_t* node);
 static node_t* findCorrectChildForParticle(
 		node_t* node,
 		double x,
-		double y);
+		double y)__attribute__((pure));
 
 static void initialize(
 		node_t* node,
@@ -76,11 +76,12 @@ static inline void insert(
 				x, y, mass);
 
 		// Update center of mass and mass of node due to new particle
+		const double newMass = node->mass + mass;
 		node->xCenterOfMass = (node->xCenterOfMass * node->mass
-				+ x * mass)/(node->mass + mass);
+				+ x * mass)/newMass;
 		node->yCenterOfMass = (node->yCenterOfMass * node->mass
-				+ y * mass)/(node->mass + mass);
-		node->mass += mass;
+				+ y * mass)/newMass;
+		node->mass = newMass;
 
 	} else {
 		// If node does not have children -> is a leaf
@@ -99,11 +100,12 @@ static inline void insert(
 					node->xCenterOfMass, node->yCenterOfMass, node->mass);
 
 			// Update center of mass and mass of node due to new particle
+			const double newMass = node->mass + mass;
 			node->xCenterOfMass = (node->xCenterOfMass * node->mass
-					+ x * mass)/(node->mass + mass);
+					+ x * mass)/newMass;
 			node->yCenterOfMass = (node->yCenterOfMass * node->mass
-					+ y * mass)/(node->mass + mass);
-			node->mass += mass;
+					+ y * mass)/newMass;
+			node->mass = newMass;
 
 		} else {
 			// Leaf is not occupied -> simply add particle
@@ -127,27 +129,34 @@ static inline void subdivide(node_t* node) {
 		node->children[i] = (node_t*) malloc(sizeof(node_t));
 	}
 
+	// Calculate side length and all centers beforehand
+	const double sideQuarter = node->sideHalf/2;
+	const double xLeft = node->xCenterOfNode - node->sideHalf;
+	const double xRight = node->xCenterOfNode + node->sideHalf;
+	const double yTop = node->yCenterOfNode + node->sideHalf;
+	const double yBot = node->yCenterOfNode - node->sideHalf;
+
 	// Initialize children
 	initialize(
 			node->children[0],
-			node->xCenterOfNode - node->sideHalf,
-			node->yCenterOfNode + node->sideHalf,
-			node->sideHalf/2);
+			xLeft,
+			yTop,
+			sideQuarter);
 	initialize(
 			node->children[1],
-			node->xCenterOfNode + node->sideHalf,
-			node->yCenterOfNode + node->sideHalf,
-			node->sideHalf/2);
+			xRight,
+			yTop,
+			sideQuarter);
 	initialize(
 			node->children[2],
-			node->xCenterOfNode - node->sideHalf,
-			node->yCenterOfNode - node->sideHalf,
-			node->sideHalf/2);
+			xLeft,
+			yBot,
+			sideQuarter);
 	initialize(
 			node->children[3],
-			node->xCenterOfNode + node->sideHalf,
-			node->yCenterOfNode - node->sideHalf,
-			node->sideHalf/2);
+			xRight,
+			yBot,
+			sideQuarter);
 }
 
 /**
