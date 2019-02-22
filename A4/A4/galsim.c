@@ -57,16 +57,17 @@ void simulate(
 		const double eps0,
 		const int nsteps,
 		const double delta_t,
-		const double theta_max) {
+		const double theta_max,
+		int n_threads) {
 
 	// Declare threads
-	pthread_t threads[N_THREADS];
+	pthread_t threads[n_threads];
 
 	// Declare thread args
-	threadData_t** data = (threadData_t**) malloc(N_THREADS*sizeof(threadData_t*));
+	threadData_t** data = (threadData_t**) malloc(n_threads*sizeof(threadData_t*));
 
 	// Nr of elements each thread will calculate
-	unsigned int workSize = N/N_THREADS;
+	unsigned int workSize = N/n_threads;
 
 	unsigned int i;
 	unsigned int j;
@@ -75,7 +76,7 @@ void simulate(
 		buildQuadtree(particles, N, root);
 
 		// Pthreads
-		for(j = 0; j < N_THREADS; j++) {
+		for(j = 0; j < n_threads; j++) {
 			// Initialize argument data
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 			data[j]->root = root;
@@ -93,7 +94,7 @@ void simulate(
 
 		// Join threads
 		void* status;
-		for(j = 0; j < N_THREADS; j++) {
+		for(j = 0; j < n_threads; j++) {
 			pthread_join(threads[j], &status);
 		}
 
@@ -101,7 +102,7 @@ void simulate(
 	}
 
 	// Free threads
-	for(i = 0; i < N_THREADS; i++) {
+	for(i = 0; i < n_threads; i++) {
 		free(data[i]);
 	}
 	free(data);
@@ -119,20 +120,21 @@ void simulateWithGraphics(
 		const char* program,
 		const unsigned int windowSize,
 		const float circleRadius,
-		const float circleColour) {
+		const float circleColour,
+		int n_threads) {
 
 	// Initialize graphics handles
 	InitializeGraphics((char*) program, windowSize, windowSize);
 	SetCAxes(0,1);	// Color axis (so 0 = white, 1 = black)
 
 	// Declare threads
-	pthread_t threads[N_THREADS];
+	pthread_t threads[n_threads];
 
 	// Declare thread args
-	threadData_t** data = (threadData_t**) malloc(N_THREADS*sizeof(threadData_t*));
+	threadData_t** data = (threadData_t**) malloc(n_threads*sizeof(threadData_t*));
 
 	// Nr of elements each thread will calculate
-	unsigned int workSize = N/N_THREADS;
+	unsigned int workSize = N/n_threads;
 
 	unsigned int j;
 	unsigned int i;
@@ -141,7 +143,7 @@ void simulateWithGraphics(
 		buildQuadtree(particles, N, root);
 
 		// Pthreads
-		for(j = 0; j < N_THREADS; j++) {
+		for(j = 0; j < n_threads; j++) {
 			// Initialize argument data
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 			data[j]->root = root;
@@ -159,7 +161,7 @@ void simulateWithGraphics(
 
 		// Join threads
 		void* status;
-		for(j = 0; j < N_THREADS; j++) {
+		for(j = 0; j < n_threads; j++) {
 			pthread_join(threads[j], &status);
 		}
 
@@ -168,7 +170,7 @@ void simulateWithGraphics(
 	}
 
 	// Free threads
-	for(i = 0; i < N_THREADS; i++) {
+	for(i = 0; i < n_threads; i++) {
 		free(data[i]);
 	}
 	free(data);
@@ -248,8 +250,10 @@ static void calculateForces(
 		double r = sqrt(r_x*r_x + r_y*r_y);
 
 		// Check if box has children, then theta
-		if (node->children) {
-			if ((node->sideHalf + node->sideHalf)/r > theta_max) {
+		if (node->children &&
+			(node->sideHalf + node->sideHalf) > theta_max * r) {
+			// Checking this way => 2 ms speedup
+			//if ((node->sideHalf + node->sideHalf)/r > theta_max) {
 				// Travel branch
 				unsigned int i;
 				for(i = 0; i < 4; i++) {
@@ -257,7 +261,7 @@ static void calculateForces(
 							G, eps0, delta_t, theta_max,
 							a_x, a_y);
 				}
-			}
+			//}
 		} else {
 			// Calculate denominator
 			double denom = r + eps0;

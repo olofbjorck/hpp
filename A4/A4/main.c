@@ -20,7 +20,6 @@
  * Original authors: Olof Björck, Gunnlaugur Geirsson
  *
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "modules.h"
@@ -78,6 +77,22 @@ int main(int argc, char const *argv[]) {
 	particles->mass = (double*) malloc(N * sizeof(double));
 	double* brightness = (double*) malloc(N * sizeof(double));
 
+	// Set n_threads depending on N
+	int n_threads;
+	if (N <= 100) {
+		n_threads = 1;
+	} else if (N % 16 == 0) {
+		n_threads = 16;
+	} else if (N % 8 == 0) {
+		n_threads = 8;
+	} else if (N % 4 == 0) {
+		n_threads = 4;
+	} else if (N % 2 == 0) {
+		n_threads = 2;
+	} else {
+		n_threads = 1;
+	}
+
 	// Check malloc
 	if (!(particles && brightness)) {
 		// Program fail, exit
@@ -94,10 +109,10 @@ int main(int argc, char const *argv[]) {
 		// Simulate with graphics
 		simulateWithGraphics(
 				particles, N, G, eps0, nsteps, delta_t, theta_max,
-				program, windowSize, circleRadius, circleColour);
+				program, windowSize, circleRadius, circleColour, n_threads);
 	} else {
 		// Simulate movement only (only calculations)
-		simulate(particles, N, G, eps0, nsteps, delta_t, theta_max);
+		simulate(particles, N, G, eps0, nsteps, delta_t, theta_max, n_threads);
 	}
 
 	// Write new state of particles to file

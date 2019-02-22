@@ -11,8 +11,6 @@
 #include "quadtree.h"
 #include <pthread.h>
 
-#define N_THREADS 4
-
 /**
  * Simulates the movement of all the particles in particle_t* particles array.
  * The simulation calculates the forces acting on each particle and then
@@ -33,7 +31,8 @@ void simulate(
 		const double eps0,
 		const int nsteps,
 		const double delta_t,
-		const double theta_max);
+		const double theta_max,
+		int n_threads);
 
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
@@ -47,4 +46,5 @@ void simulateWithGraphics(
 		const char* program,
 		const unsigned int windowSize,
 		const float circleRadius,
-		const float circleColour);
+		const float circleColour,
+		int n_threads);
