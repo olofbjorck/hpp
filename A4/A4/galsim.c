@@ -74,7 +74,7 @@ void simulate(
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
 
-		// Pthreads 
+		// Pthreads
 		for(j = 0; j < N_THREADS; j++) {
 			// Initialize argument data
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
@@ -128,7 +128,7 @@ void simulateWithGraphics(
 	// Declare threads
 	pthread_t threads[N_THREADS];
 
-	// Declare thread args 
+	// Declare thread args
 	threadData_t** data = (threadData_t**) malloc(N_THREADS*sizeof(threadData_t*));
 
 	// Nr of elements each thread will calculate
@@ -140,7 +140,7 @@ void simulateWithGraphics(
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
 
-		// Pthreads 
+		// Pthreads
 		for(j = 0; j < N_THREADS; j++) {
 			// Initialize argument data
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
