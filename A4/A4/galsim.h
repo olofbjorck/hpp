@@ -9,6 +9,9 @@
 #include "graphics.h"
 #include <math.h>
 #include "quadtree.h"
+#include <pthread.h>
+
+#define N_THREADS 4
 
 /**
  * Simulates the movement of all the particles in particle_t* particles array.

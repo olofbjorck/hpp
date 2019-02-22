@@ -1,10 +1,17 @@
 #include "galsim.h"
 
 /*******************************************************************************
+GLOBAL PTHREAD VARIABLES
+*******************************************************************************/
+
+pthread_mutex_t lock;
+
+/*******************************************************************************
 STATIC FUNCTION DECLARATIONS
 *******************************************************************************/
 
-static inline void updateParticles(
+static void* updateParticles(void* arg);
+		/*
 		particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root,
@@ -12,6 +19,7 @@ static inline void updateParticles(
 		const double eps0,
 		const double delta_t,
 		const double theta_max);
+		*/
 
 static void calculateForces(
 		double x,
@@ -51,13 +59,52 @@ void simulate(
 		const double delta_t,
 		const double theta_max) {
 
+	// Declare threads
+	pthread_t threads[N_THREADS];
+
+	// Declare thread args
+	threadData_t** data = (threadData_t**) malloc(N_THREADS*sizeof(threadData_t*));
+
+	// Nr of elements each thread will calculate
+	unsigned int workSize = N/N_THREADS;
+
 	unsigned int i;
+	unsigned int j;
 	for (i = 0; i < nsteps; i++) {
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
-		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
+
+		// Pthreads 
+		for(j = 0; j < N_THREADS; j++) {
+			// Initialize argument data
+			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
+			data[j]->root = root;
+			data[j]->particles = particles;
+			data[j]->N = &N;
+			data[j]->G = &G;
+			data[j]->eps0 = &eps0;
+			data[j]->delta_t = &delta_t;
+			data[j]->theta_max = &theta_max;
+			data[j]->threadIdx = j;
+			data[j]->workSize = workSize;
+			// Make threads
+			pthread_create(&threads[j], NULL, updateParticles, (void*)data[j]);
+		}
+
+		// Join threads
+		void* status;
+		for(j = 0; j < N_THREADS; j++) {
+			pthread_join(threads[j], &status);
+		}
+
 		freeQuadtree(root);
 	}
+
+	// Free threads
+	for(i = 0; i < N_THREADS; i++) {
+		free(data[i]);
+	}
+	free(data);
 }
 
 // Simulate the movement of the particles and show graphically
@@ -78,14 +125,53 @@ void simulateWithGraphics(
 	InitializeGraphics((char*) program, windowSize, windowSize);
 	SetCAxes(0,1);	// Color axis (so 0 = white, 1 = black)
 
+	// Declare threads
+	pthread_t threads[N_THREADS];
+
+	// Declare thread args 
+	threadData_t** data = (threadData_t**) malloc(N_THREADS*sizeof(threadData_t*));
+
+	// Nr of elements each thread will calculate
+	unsigned int workSize = N/N_THREADS;
+
+	unsigned int j;
 	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
-		updateParticles(particles, N, root, G, eps0, delta_t, theta_max);
+
+		// Pthreads 
+		for(j = 0; j < N_THREADS; j++) {
+			// Initialize argument data
+			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
+			data[j]->root = root;
+			data[j]->particles = particles;
+			data[j]->N = &N;
+			data[j]->G = &G;
+			data[j]->eps0 = &eps0;
+			data[j]->delta_t = &delta_t;
+			data[j]->theta_max = &theta_max;
+			data[j]->threadIdx = j;
+			data[j]->workSize = workSize;
+			// Make threads
+			pthread_create(&threads[j], NULL, updateParticles, (void*)data[j]);
+		}
+
+		// Join threads
+		void* status;
+		for(j = 0; j < N_THREADS; j++) {
+			pthread_join(threads[j], &status);
+		}
+
 		freeQuadtree(root);
 		showGraphics(particles, N, circleRadius, circleColour);
 	}
+
+	// Free threads
+	for(i = 0; i < N_THREADS; i++) {
+		free(data[i]);
+	}
+	free(data);
 
 	// Remove graphics handles
 	FlushDisplay();
@@ -96,45 +182,56 @@ void simulateWithGraphics(
 STATIC FUNCTION DEFINITIONS
 *******************************************************************************/
 
-static inline void updateParticles(
+static void* updateParticles(void* arg
+		/*
 		particles_t* __restrict particles,
 		const int N,
 		node_t* __restrict root,
 		const double G,
 		const double eps0,
 		const double delta_t,
-		const double theta_max) {
+		const double theta_max
+		*/) {
+
+	threadData_t* data = (threadData_t*)arg;
 
 	double a_x; // x-acceleration
 	double a_y; // y-acceleration
 
 	// Loop remaining particles
 	unsigned int i;
-	for (i = 0; i < N; i++) {
+	unsigned int iStart = data->threadIdx * data->workSize;
+	unsigned int iEnd = iStart + data->workSize;
+	for (i = iStart; i < iEnd; i++) {
 
 		// Set acceleration to zero
 		a_x = 0.0;
 		a_y = 0.0;
-		const double x = particles->x[i];
-		const double y = particles->y[i];
+		const double x = data->particles->x[i];
+		const double y = data->particles->y[i];
 
 		//* Update acceleration
-		calculateForces(x, y, root,
-				G, eps0, delta_t, theta_max,
+		calculateForces(x, y,
+				data->root,
+				*(data->G),
+				*(data->eps0),
+				*(data->delta_t),
+				*(data->theta_max),
 				&a_x, &a_y);
 
 		// Update velocity
-		particles->v_x[i] += -G*delta_t*a_x;
-		particles->v_y[i] += -G*delta_t*a_y;
+		data->particles->v_x[i] += -(*data->G)*(*data->delta_t)*a_x;
+		data->particles->v_y[i] += -(*data->G)*(*data->delta_t)*a_y;
 
 		// Update position
-		particles->x[i] += delta_t*particles->v_x[i];
-		particles->y[i] += delta_t*particles->v_y[i];
+		data->particles->x[i] += (*data->delta_t)*data->particles->v_x[i];
+		data->particles->y[i] += (*data->delta_t)*data->particles->v_y[i];
 	}
+	pthread_exit(NULL);
 }
 
 // Calculates force exerted on every particle, recursively
-static inline void calculateForces(const double x, const double y,
+static void calculateForces(const double x, const double y,
 		node_t* __restrict node,
 		const double G,
 		const double eps0,
