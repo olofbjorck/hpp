@@ -83,8 +83,7 @@ static inline void insert(
 				+ y * mass)/newMass;
 		node->mass = newMass;
 
-	} else {
-		// If node does not have children -> is a leaf
+	} else { // else: node does not have children -> is a leaf
 
 		if(node->mass) {
 			// If leaf is already occupied -> subdivide

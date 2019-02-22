@@ -231,7 +231,9 @@ static void* updateParticles(void* arg
 }
 
 // Calculates force exerted on every particle, recursively
-static void calculateForces(const double x, const double y,
+static void calculateForces(
+		const double x,
+		const double y,
 		node_t* __restrict node,
 		const double G,
 		const double eps0,
@@ -245,16 +247,16 @@ static void calculateForces(const double x, const double y,
 		double r_y = y - node->yCenterOfMass;
 		double r = sqrt(r_x*r_x + r_y*r_y);
 
-		double theta = (node->sideHalf + node->sideHalf)/r;
-
 		// Check if box has children, then theta
-		if (node->children && theta > theta_max) {
-			// Travel branch
-			unsigned int i;
-			for(i = 0; i < 4; i++) {
-				calculateForces(x, y, node->children+i,
-						G, eps0, delta_t, theta_max,
-						a_x, a_y);
+		if (node->children) {
+			if ((node->sideHalf + node->sideHalf)/r > theta_max) {
+				// Travel branch
+				unsigned int i;
+				for(i = 0; i < 4; i++) {
+					calculateForces(x, y, node->children+i,
+							G, eps0, delta_t, theta_max,
+							a_x, a_y);
+				}
 			}
 		} else {
 			// Calculate denominator
