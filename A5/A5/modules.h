@@ -51,6 +51,6 @@ typedef struct threadData {
 	node_t* root;
 	particles_t* particles;
 	const simulationConstants_t* simulationConstants;
-	int threadIdx;
-	int workSize;
+	unsigned int iStart;
+	unsigned int iEnd;
 } threadData_t;

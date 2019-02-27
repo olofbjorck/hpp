@@ -45,7 +45,7 @@ void simulate(
 		particles_t* __restrict particles,
 		simulationConstants_t* __restrict simulationConstants) {
 
-	// Simulation constants
+	// Extract simulation constants
 	const int N = *simulationConstants->N;
 	const int n_threads = *simulationConstants->n_threads;
 	const int nsteps = *simulationConstants->nsteps;
@@ -55,33 +55,50 @@ void simulate(
 
 	// Declare thread args
 	threadData_t** data =
-			(threadData_t**) malloc(n_threads*sizeof(threadData_t*));
+			(threadData_t**) malloc(n_threads * sizeof(threadData_t*));
 
-	// Nr of elements each thread will calculate
-	unsigned int workSize = N/n_threads;
+	// Compute workload for the threads
+	int workSize;
+	int n_threadsLeftover = N % n_threads;
+	if (n_threadsLeftover) {
+		workSize = (N - n_threadsLeftover)/n_threads;
+	} else {
+		workSize = N/n_threads;
+	}
 
+	// Loop
 	unsigned int i;
 	unsigned int j;
+	unsigned int n_threadsMinus1 = n_threads - 1; // Precompute
+	void* status;
 	for (i = 0; i < nsteps; i++) {
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
 
-		// Pthreads
-		for(j = 0; j < n_threads; j++) {
-			// Initialize argument data
+		// Create threads
+		for (j = 0; j < n_threadsMinus1; j++) {
+			// Initialize argument data and then create thread
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 			data[j]->root = root;
 			data[j]->particles = particles;
 			data[j]->simulationConstants = simulationConstants;
-			data[j]->threadIdx = j;
-			data[j]->workSize = workSize;
-			// Make threads
+			data[j]->iStart = j * workSize;
+			data[j]->iEnd = data[j]->iStart + workSize;
 			pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
 		}
+		// Create last thread that includes leftover computations
+		data[j] = (threadData_t*) malloc(sizeof(threadData_t));
+		data[j]->root = root;
+		data[j]->particles = particles;
+		data[j]->simulationConstants = simulationConstants;
+		data[j]->iStart = N - workSize - n_threadsLeftover;//j * workSize;
+		data[j]->iEnd = N;
+		pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
 
 		// Join threads
-		void* status;
-		for(j = 0; j < n_threads; j++) {
+		//void* status; /* Faster to have status here instead of before for-loop
+						 //for some reason */
+		for (j = 0; j < n_threads; j++) {
 			pthread_join(threads[j], &status);
 		}
 
@@ -139,8 +156,8 @@ void simulateWithGraphics(
 			data[j]->root = root;
 			data[j]->particles = particles;
 			data[j]->simulationConstants = simulationConstants;
-			data[j]->threadIdx = j;
-			data[j]->workSize = workSize;
+			data[j]->iStart = j;
+			data[j]->iEnd = workSize;
 			// Make threads
 			pthread_create(&threads[j], NULL, updateParticles, (void*)data[j]);
 		}
@@ -150,7 +167,7 @@ void simulateWithGraphics(
 		for(j = 0; j < n_threads; j++) {
 			pthread_join(threads[j], &status);
 		}
-		
+
 		freeQuadtree(root);
 		showGraphics(particles, N, circleRadius, circleColour);
 	}
@@ -186,9 +203,7 @@ static void* updateParticles(void* arg) {
 
 	// Loop remaining particles
 	unsigned int i;
-	unsigned int iStart = data->threadIdx * data->workSize;
-	unsigned int iEnd = iStart + data->workSize;
-	for (i = iStart; i < iEnd; i++) {
+	for (i = data->iStart; i < data->iEnd; i++) {
 
 		// Set acceleration to zero
 		a_x = 0.0;
