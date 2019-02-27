@@ -91,7 +91,7 @@ void simulate(
 		data[j]->root = root;
 		data[j]->particles = particles;
 		data[j]->simulationConstants = simulationConstants;
-		data[j]->iStart = N - workSize - n_threadsLeftover;//j * workSize;
+		data[j]->iStart = N - workSize - n_threadsLeftover;
 		data[j]->iEnd = N;
 		pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
 
@@ -140,34 +140,52 @@ void simulateWithGraphics(
 	// Declare thread args
 	threadData_t** data = (threadData_t**) malloc(n_threads*sizeof(threadData_t*));
 
-	// Nr of elements each thread will calculate
-	unsigned int workSize = N/n_threads;
+	// Compute workload for the threads
+	int workSize;
+	int n_threadsLeftover = N % n_threads;
+	if (n_threadsLeftover) {
+		workSize = (N - n_threadsLeftover)/n_threads;
+	} else {
+		workSize = N/n_threads;
+	}
 
-	unsigned int j;
+	// Loop
 	unsigned int i;
+	unsigned int j;
+	unsigned int n_threadsMinus1 = n_threads - 1; // Precompute
+	void* status;
 	for (i = 0; i < nsteps; i++) {
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
 
-		// Pthreads
-		for(j = 0; j < n_threads; j++) {
-			// Initialize argument data
+		// Create threads
+		for (j = 0; j < n_threadsMinus1; j++) {
+			// Initialize argument data and then create thread
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 			data[j]->root = root;
 			data[j]->particles = particles;
 			data[j]->simulationConstants = simulationConstants;
-			data[j]->iStart = j;
-			data[j]->iEnd = workSize;
-			// Make threads
-			pthread_create(&threads[j], NULL, updateParticles, (void*)data[j]);
+			data[j]->iStart = j * workSize;
+			data[j]->iEnd = data[j]->iStart + workSize;
+			pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
 		}
+		// Create last thread that includes leftover computations
+		data[j] = (threadData_t*) malloc(sizeof(threadData_t));
+		data[j]->root = root;
+		data[j]->particles = particles;
+		data[j]->simulationConstants = simulationConstants;
+		data[j]->iStart = N - workSize - n_threadsLeftover;
+		data[j]->iEnd = N;
+		pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
 
 		// Join threads
-		void* status;
-		for(j = 0; j < n_threads; j++) {
+		//void* status; /* Faster to have status here instead of before for-loop
+						 //for some reason */
+		for (j = 0; j < n_threads; j++) {
 			pthread_join(threads[j], &status);
 		}
 
+		// Free quadtree
 		freeQuadtree(root);
 		showGraphics(particles, N, circleRadius, circleColour);
 	}
