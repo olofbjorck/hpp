@@ -1,5 +1,5 @@
 // RUN BY:
-// time ./galsim 03000 ../input_data/ellipse_N_03000.gal 100 0.00001 0.1 0
+// time ./galsim 05000 ../input_data/ellipse_N_05000.gal 100 0.00001 0.1 0 1
 
 // ./galsim 2 ../input_data/circles_N_2.gal 100 0.00001 0.1 0
 // ./galsim 4 ../input_data/circles_N_4.gal 100 0.00001 0.1 0
@@ -34,7 +34,7 @@
  */
 int main(int argc, char const *argv[]) {
 	// Check proper number of input arguments
-	if (argc != 7) {
+	if (argc != 8) {
 		printf("%s\n", "Input error: Expected 6 input arguments");
 		return 1;
 	}
@@ -47,19 +47,9 @@ int main(int argc, char const *argv[]) {
 	const double delta_t = atof(argv[4]); // Timestep
 	const double theta_max = atof(argv[5]);
 	const int graphics = atoi(argv[6]); // Graphics on/off as 1/0
+	const int n_threads = atoi(argv[7]);
 
-	// DEBUG
-	/*
-	const char* program = "galsim";
-	const int N = 3000;
-	const char* filename = "../input_data/ellipse_N_03000.gal";
-	const int nsteps = 100;
-	const double delta_t = 0.00001;
-	const double theta_max = 0.5;
-	const int graphics = 0;
-	*/
-
-	// Define some constants
+	// Constants for the simulation
 	const double G = 100.0/N; // Gravitational constant
 	const double eps0 = 0.001; // Plummer sphere constant
 
@@ -67,6 +57,25 @@ int main(int argc, char const *argv[]) {
 	const unsigned int windowSize = 1000;
 	const float circleRadius = 0.0025f;
 	const float circleColour = 0.0f;
+
+	// Add the simulation constants to struct
+	simulationConstants_t* simulationConstants =
+			(simulationConstants_t*) malloc(sizeof(simulationConstants_t));
+	simulationConstants->N = &N;
+	simulationConstants->nsteps = &nsteps;
+	simulationConstants->delta_t = &delta_t;
+	simulationConstants->theta_max = &theta_max;
+	simulationConstants->n_threads = &n_threads;
+	simulationConstants->G = &G;
+	simulationConstants->eps0 = &eps0;
+
+	// Add the graphics constants to struct
+	graphicsConstants_t* graphicsConstants =
+			(graphicsConstants_t*) malloc(sizeof(graphicsConstants_t));
+	graphicsConstants->program = &program;
+	graphicsConstants->windowSize = &windowSize;
+	graphicsConstants->circleRadius = &circleRadius;
+	graphicsConstants->circleColour = &circleColour;
 
 	// Create particles struct and allocate space
 	particles_t* particles = (particles_t*) malloc(sizeof(particles_t));
@@ -76,22 +85,6 @@ int main(int argc, char const *argv[]) {
 	particles->v_y = (double*) malloc(N * sizeof(double));
 	particles->mass = (double*) malloc(N * sizeof(double));
 	double* brightness = (double*) malloc(N * sizeof(double));
-
-	// Set n_threads depending on N
-	int n_threads;
-	if (N <= 100) {
-		n_threads = 1;
-	} else if (N % 16 == 0) {
-		n_threads = 16;
-	} else if (N % 8 == 0) {
-		n_threads = 8;
-	} else if (N % 4 == 0) {
-		n_threads = 4;
-	} else if (N % 2 == 0) {
-		n_threads = 2;
-	} else {
-		n_threads = 1;
-	}
 
 	// Check malloc
 	if (!(particles && brightness)) {
@@ -107,12 +100,10 @@ int main(int argc, char const *argv[]) {
 	// Simulate
 	if (graphics) {
 		// Simulate with graphics
-		simulateWithGraphics(
-				particles, N, G, eps0, nsteps, delta_t, theta_max,
-				program, windowSize, circleRadius, circleColour, n_threads);
+		simulateWithGraphics(particles, simulationConstants, graphicsConstants);
 	} else {
 		// Simulate movement only (only calculations)
-		simulate(particles, N, G, eps0, nsteps, delta_t, theta_max, n_threads);
+		simulate(particles, simulationConstants);
 	}
 
 	// Write new state of particles to file

@@ -11,15 +11,6 @@ STATIC FUNCTION DECLARATIONS
 *******************************************************************************/
 
 static void* updateParticles(void* arg);
-		/*
-		particles_t* __restrict particles,
-		const int N,
-		node_t* __restrict root,
-		const double G,
-		const double eps0,
-		const double delta_t,
-		const double theta_max);
-		*/
 
 static void calculateForces(
 		double x,
@@ -52,19 +43,19 @@ FUNCTION DEFINITIONS
 // Simulate the movement of the particles
 void simulate(
 		particles_t* __restrict particles,
-		const int N,
-		const double G,
-		const double eps0,
-		const int nsteps,
-		const double delta_t,
-		const double theta_max,
-		int n_threads) {
+		simulationConstants_t* __restrict simulationConstants) {
+
+	// Simulation constants
+	const int N = *simulationConstants->N;
+	const int n_threads = *simulationConstants->n_threads;
+	const int nsteps = *simulationConstants->nsteps;
 
 	// Declare threads
 	pthread_t threads[n_threads];
 
 	// Declare thread args
-	threadData_t** data = (threadData_t**) malloc(n_threads*sizeof(threadData_t*));
+	threadData_t** data =
+			(threadData_t**) malloc(n_threads*sizeof(threadData_t*));
 
 	// Nr of elements each thread will calculate
 	unsigned int workSize = N/n_threads;
@@ -81,15 +72,11 @@ void simulate(
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 			data[j]->root = root;
 			data[j]->particles = particles;
-			data[j]->N = &N;
-			data[j]->G = &G;
-			data[j]->eps0 = &eps0;
-			data[j]->delta_t = &delta_t;
-			data[j]->theta_max = &theta_max;
+			data[j]->simulationConstants = simulationConstants;
 			data[j]->threadIdx = j;
 			data[j]->workSize = workSize;
 			// Make threads
-			pthread_create(&threads[j], NULL, updateParticles, (void*)data[j]);
+			pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
 		}
 
 		// Join threads
@@ -98,6 +85,7 @@ void simulate(
 			pthread_join(threads[j], &status);
 		}
 
+		// Free quadtree
 		freeQuadtree(root);
 	}
 
@@ -111,17 +99,19 @@ void simulate(
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
 		particles_t* __restrict particles,
-		const int N,
-		const double G,
-		const double eps0,
-		const int nsteps,
-		const double delta_t,
-		const double theta_max,
-		const char* program,
-		const unsigned int windowSize,
-		const float circleRadius,
-		const float circleColour,
-		int n_threads) {
+		simulationConstants_t* simulationConstants,
+		graphicsConstants_t* graphicsConstants) {
+
+	// Simulation constants
+	const int N = *simulationConstants->N;
+	const int n_threads = *simulationConstants->n_threads;
+	const int nsteps = *simulationConstants->nsteps;
+
+	// Graphics constants
+	const char* program = *graphicsConstants->program;
+	const unsigned int windowSize = *graphicsConstants->windowSize;
+	const float circleRadius = *graphicsConstants->circleRadius;
+	const float circleColour = *graphicsConstants->circleColour;
 
 	// Initialize graphics handles
 	InitializeGraphics((char*) program, windowSize, windowSize);
@@ -148,11 +138,7 @@ void simulateWithGraphics(
 			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 			data[j]->root = root;
 			data[j]->particles = particles;
-			data[j]->N = &N;
-			data[j]->G = &G;
-			data[j]->eps0 = &eps0;
-			data[j]->delta_t = &delta_t;
-			data[j]->theta_max = &theta_max;
+			data[j]->simulationConstants = simulationConstants;
 			data[j]->threadIdx = j;
 			data[j]->workSize = workSize;
 			// Make threads
@@ -164,7 +150,7 @@ void simulateWithGraphics(
 		for(j = 0; j < n_threads; j++) {
 			pthread_join(threads[j], &status);
 		}
-
+		
 		freeQuadtree(root);
 		showGraphics(particles, N, circleRadius, circleColour);
 	}
@@ -184,19 +170,17 @@ void simulateWithGraphics(
 STATIC FUNCTION DEFINITIONS
 *******************************************************************************/
 
-static void* updateParticles(void* arg
-		/*
-		particles_t* __restrict particles,
-		const int N,
-		node_t* __restrict root,
-		const double G,
-		const double eps0,
-		const double delta_t,
-		const double theta_max
-		*/) {
+static void* updateParticles(void* arg) {
 
-	threadData_t* data = (threadData_t*)arg;
+	threadData_t* data = (threadData_t*) arg;
 
+	// Get some constants on stack for speedup
+	const double G = *(data->simulationConstants->G);
+	const double eps0 = *(data->simulationConstants->eps0);
+	const double delta_t = *(data->simulationConstants->delta_t);
+	const double theta_max = *(data->simulationConstants->theta_max);
+
+	// Declare acceleration
 	double a_x; // x-acceleration
 	double a_y; // y-acceleration
 
@@ -212,22 +196,20 @@ static void* updateParticles(void* arg
 		const double x = data->particles->x[i];
 		const double y = data->particles->y[i];
 
-		//* Update acceleration
-		calculateForces(x, y,
+		// Update acceleration
+		calculateForces(
+				x, y,
 				data->root,
-				*(data->G),
-				*(data->eps0),
-				*(data->delta_t),
-				*(data->theta_max),
+				G, eps0, delta_t, theta_max,
 				&a_x, &a_y);
 
 		// Update velocity
-		data->particles->v_x[i] += -(*data->G)*(*data->delta_t)*a_x;
-		data->particles->v_y[i] += -(*data->G)*(*data->delta_t)*a_y;
+		data->particles->v_x[i] += -G * delta_t * a_x;
+		data->particles->v_y[i] += -G * delta_t * a_y;
 
 		// Update position
-		data->particles->x[i] += (*data->delta_t)*data->particles->v_x[i];
-		data->particles->y[i] += (*data->delta_t)*data->particles->v_y[i];
+		data->particles->x[i] += delta_t * data->particles->v_x[i];
+		data->particles->y[i] += delta_t * data->particles->v_y[i];
 	}
 	pthread_exit(NULL);
 }
@@ -244,32 +226,31 @@ static void calculateForces(
 		double* __restrict a_x,
 		double* __restrict a_y) {
 
-		// Get distance particle<->box
-		double r_x = x - node->xCenterOfMass;
-		double r_y = y - node->yCenterOfMass;
-		double r = sqrt(r_x*r_x + r_y*r_y);
+	// Get distance particle<->box
+	double r_x = x - node->xCenterOfMass;
+	double r_y = y - node->yCenterOfMass;
+	double r = sqrt(r_x*r_x + r_y*r_y);
 
-		// Check if box has children, then theta
-		if (node->children &&
-			(node->sideHalf + node->sideHalf) > theta_max * r) {
-			// Checking this way => 2 ms speedup
-			//if ((node->sideHalf + node->sideHalf)/r > theta_max) {
-				// Travel branch
-				unsigned int i;
-				for(i = 0; i < 4; i++) {
-					calculateForces(x, y, node->children+i,
-							G, eps0, delta_t, theta_max,
-							a_x, a_y);
-				}
-			//}
-		} else {
-			// Calculate denominator
-			double denom = r + eps0;
-			denom = 1/(denom*denom*denom);
-			// Acceleration
-			*a_x += node->mass*r_x*denom;
-			*a_y += node->mass*r_y*denom;
+	// Check if box has children, then theta
+	if (node->children &&
+		(node->sideHalf + node->sideHalf) > theta_max * r)  {
+		// Travel branch
+		unsigned int i;
+		for(i = 0; i < 4; i++) {
+			calculateForces(
+					x, y,
+					node->children + i,
+					G, eps0, delta_t, theta_max,
+					a_x, a_y);
 		}
+	} else {
+		// Calculate denominator
+		double denom = r + eps0;
+		denom = 1/(denom*denom*denom);
+		// Acceleration
+		*a_x += node->mass * r_x * denom;
+		*a_y += node->mass * r_y * denom;
+	}
 }
 
 // Show particles graphically
@@ -287,6 +268,7 @@ static void showGraphics(
 	Refresh();
 	usleep(3000);	// TODO make variable fps
 }
+
 
 /*******************************************************************************
 DEBUG FUNCTIONS

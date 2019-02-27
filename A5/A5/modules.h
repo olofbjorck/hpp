@@ -27,15 +27,30 @@ typedef struct node {
 
 } node_t;
 
+// Input constants
+typedef struct simulationConstants {
+	const double* delta_t; // Timestep
+	const double* theta_max;
+	const double* G; // Gravitational constant
+	const double* eps0; // Plummer sphere constant
+	const int* N; // Nr of stars to simulate
+	const int* nsteps; // Nr of filesteps
+	const int* n_threads;
+} simulationConstants_t;
+
+// Graphics constants
+typedef struct graphicsConstants {
+	const char** program;
+	const unsigned int* windowSize;
+	const float* circleRadius;
+	const float* circleColour;
+} graphicsConstants_t;
+
 // Argument for threaded function updateParticles()
 typedef struct threadData {
 	node_t* root;
 	particles_t* particles;
-	const int* N;
-	const double* G;
-	const double* eps0;
-	const double* delta_t;
-	const double* theta_max;
+	const simulationConstants_t* simulationConstants;
 	int threadIdx;
 	int workSize;
 } threadData_t;
