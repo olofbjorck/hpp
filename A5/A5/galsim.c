@@ -52,12 +52,14 @@ void simulate(
 	const int n_threads = *simulationConstants->n_threads;
 	const int nsteps = *simulationConstants->nsteps;
 
+	// Create root
+	node_t root;
+
 	// Declare threads
 	pthread_t threads[n_threads];
 
 	// Declare thread args
-	threadData_t** data =
-			(threadData_t**) malloc(n_threads * sizeof(threadData_t*));
+	threadData_t* data[n_threads];
 
 	// Compute workload for the threads
 	int workSize;
@@ -71,11 +73,10 @@ void simulate(
 	// Create thread data
 	unsigned int i;
 	unsigned int j;
-	node_t* root = (node_t*) malloc(sizeof(node_t));
 	for (j = 0; j < n_threads - 1; j++) {
 		// Initialize argument data and then create thread
 		data[j] = (threadData_t*) malloc(sizeof(threadData_t));
-		data[j]->root = root;
+		data[j]->root = &root;
 		data[j]->particles = particles;
 		data[j]->simulationConstants = simulationConstants;
 		data[j]->iStart = j * workSize;
@@ -83,7 +84,7 @@ void simulate(
 	}
 	// Create last thread that includes leftover computations
 	data[j] = (threadData_t*) malloc(sizeof(threadData_t));
-	data[j]->root = root;
+	data[j]->root = &root;
 	data[j]->particles = particles;
 	data[j]->simulationConstants = simulationConstants;
 	data[j]->iStart = N - workSize - n_threadsLeftover;
@@ -93,7 +94,7 @@ void simulate(
 	for (i = 0; i < nsteps; i++) {
 
 		// Build quadtree
-		buildQuadtree(particles, N, root);
+		buildQuadtree(particles, N, &root);
 
 		// Create threads
 		for (j = 0; j < n_threads; j++) {
@@ -106,17 +107,13 @@ void simulate(
 		}
 
 		// Free quadtree
-		freeQuadtree(root);
+		freeQuadtree(&root);
 	}
 
 	// Free thread data
 	for(i = 0; i < n_threads; i++) {
 		free(data[i]);
 	}
-	free(data);
-
-	// Free root
-	free(root);
 }
 
 // Simulate the movement of the particles and show graphically
