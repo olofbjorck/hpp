@@ -118,6 +118,8 @@ int main(int argc, char const *argv[]) {
 	free(particles->mass);
 	free(particles);
 	free(brightness);
+	free(graphicsConstants);
+	free(simulationConstants);
 
 	// Success
 	return 0;
