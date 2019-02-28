@@ -154,60 +154,68 @@ void simulateWithGraphics(
 		workSize = N/n_threads;
 	}
 
-	// Loop
+	// Create thread data
 	unsigned int i;
 	unsigned int j;
-	unsigned int n_threadsMinus1 = n_threads - 1; // Precompute
-	void* status;
-	double loopTimer;
-	for (i = 0; i < nsteps; i++) {
-		clock_t timeBefore = clock();	// for fps
-		node_t* root = (node_t*) malloc(sizeof(node_t));
-		buildQuadtree(particles, N, root);
-
-		// Create threads
-		for (j = 0; j < n_threadsMinus1; j++) {
-			// Initialize argument data and then create thread
-			data[j] = (threadData_t*) malloc(sizeof(threadData_t));
-			data[j]->root = root;
-			data[j]->particles = particles;
-			data[j]->simulationConstants = simulationConstants;
-			data[j]->iStart = j * workSize;
-			data[j]->iEnd = data[j]->iStart + workSize;
-			pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
-		}
-		// Create last thread that includes leftover computations
+	node_t* root = (node_t*) malloc(sizeof(node_t));
+	for (j = 0; j < n_threads - 1; j++) {
+		// Initialize argument data and then create thread
 		data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 		data[j]->root = root;
 		data[j]->particles = particles;
 		data[j]->simulationConstants = simulationConstants;
-		data[j]->iStart = N - workSize - n_threadsLeftover;
-		data[j]->iEnd = N;
-		pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
+		data[j]->iStart = j * workSize;
+		data[j]->iEnd = data[j]->iStart + workSize;
+	}
+	// Create last thread that includes leftover computations
+	data[j] = (threadData_t*) malloc(sizeof(threadData_t));
+	data[j]->root = root;
+	data[j]->particles = particles;
+	data[j]->simulationConstants = simulationConstants;
+	data[j]->iStart = N - workSize - n_threadsLeftover;
+	data[j]->iEnd = N;
+
+	// Simulate
+	void* status;
+	double loopTimer;
+	for (i = 0; i < nsteps; i++) {
+		clock_t timeBefore = clock();	// for fps
+
+		// Build quadtree
+		buildQuadtree(particles, N, root);
+
+		// Create threads
+		for (j = 0; j < n_threads; j++) {
+			pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
+		}
 
 		// Join threads
-		//void* status; /* Faster to have status here instead of before for-loop
-						 //for some reason */
 		for (j = 0; j < n_threads; j++) {
 			pthread_join(threads[j], &status);
 		}
 
 		// Free quadtree
 		freeQuadtree(root);
-		showGraphics(particles, N, graphicsConstants);
 
 		// Variable fps
 		loopTimer = (double)(clock() - timeBefore)/CLOCKS_PER_SEC;	// Time in seconds
 		if(loopTimer < 1.0/GRAPHICS_FPS) {
 			usleep(1000000*(1.0/GRAPHICS_FPS - loopTimer));	// Time in useconds
+
+		// Graphics
+		showGraphics(particles, N, graphicsConstants);
 		}
 	}
 
-	// Free threads
+	// Free thread data
 	for(i = 0; i < n_threads; i++) {
 		free(data[i]);
 	}
 	free(data);
+
+	// Free root
+	free(root);
+
 
 	// Remove graphics handles
 	FlushDisplay();
