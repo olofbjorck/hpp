@@ -1,10 +1,13 @@
 #include "galsim.h"
+#include <time.h>
+
+#define GRAPHICS_FPS 30
 
 /*******************************************************************************
 GLOBAL PTHREAD VARIABLES
 *******************************************************************************/
 
-pthread_mutex_t lock;
+//pthread_mutex_t lock;
 
 /*******************************************************************************
 STATIC FUNCTION DECLARATIONS
@@ -12,7 +15,7 @@ STATIC FUNCTION DECLARATIONS
 
 static void* updateParticles(void* arg);
 
-static void calculateForces(
+static inline void calculateForces(
 		double x,
 		double y,
 		node_t* __restrict node,
@@ -26,8 +29,7 @@ static void calculateForces(
 static void showGraphics(
 		particles_t* __restrict particles,
 		const int N,
-		const double circleRadius,
-		const int circleColour);
+		graphicsConstants_t* __restrict graphicsConstants);
 
 /* Debug funcs
 void printParticles(particles_t* particles, int N);
@@ -132,8 +134,6 @@ void simulateWithGraphics(
 	// Graphics constants
 	const char* program = *graphicsConstants->program;
 	const unsigned int windowSize = *graphicsConstants->windowSize;
-	const float circleRadius = *graphicsConstants->circleRadius;
-	const float circleColour = *graphicsConstants->circleColour;
 
 	// Initialize graphics handles
 	InitializeGraphics((char*) program, windowSize, windowSize);
@@ -159,7 +159,9 @@ void simulateWithGraphics(
 	unsigned int j;
 	unsigned int n_threadsMinus1 = n_threads - 1; // Precompute
 	void* status;
+	double loopTimer;
 	for (i = 0; i < nsteps; i++) {
+		clock_t timeBefore = clock();	// for fps
 		node_t* root = (node_t*) malloc(sizeof(node_t));
 		buildQuadtree(particles, N, root);
 
@@ -192,7 +194,13 @@ void simulateWithGraphics(
 
 		// Free quadtree
 		freeQuadtree(root);
-		showGraphics(particles, N, circleRadius, circleColour);
+		showGraphics(particles, N, graphicsConstants);
+
+		// Variable fps
+		loopTimer = (double)(clock() - timeBefore)/CLOCKS_PER_SEC;	// Time in seconds
+		if(loopTimer < 1.0/GRAPHICS_FPS) {
+			usleep(1000000*(1.0/GRAPHICS_FPS - loopTimer));	// Time in useconds
+		}
 	}
 
 	// Free threads
@@ -253,7 +261,7 @@ static void* updateParticles(void* arg) {
 }
 
 // Calculates force exerted on every particle, recursively
-static void calculateForces(
+static inline void calculateForces(
 		const double x,
 		const double y,
 		node_t* __restrict node,
@@ -295,13 +303,13 @@ static void calculateForces(
 static void showGraphics(
 		particles_t* __restrict particles,
 		const int N,
-		const double circleRadius,
-		const int circleColour) {
+		graphicsConstants_t* __restrict graphicsConstants) {
 
 	ClearScreen();
 	unsigned int i;
 	for(i = 0; i < N; i++) {
-		DrawCircle(particles->x[i], particles->y[i], 1, 1, circleRadius, circleColour);
+		DrawCircle(particles->x[i], particles->y[i], 1, 1, 
+				*(graphicsConstants->circleRadius), *(graphicsConstants->circleColour));
 	}
 	Refresh();
 	usleep(3000);	// TODO make variable fps
