@@ -90,7 +90,6 @@ void simulate(
 	data[j]->iEnd = N;
 
 	// Simulate
-	void* status;
 	for (i = 0; i < nsteps; i++) {
 
 		// Build quadtree
@@ -103,7 +102,7 @@ void simulate(
 
 		// Join threads
 		for (j = 0; j < n_threads; j++) {
-			pthread_join(threads[j], &status);
+			pthread_join(threads[j], NULL);
 		}
 
 		// Free quadtree
@@ -308,7 +307,7 @@ static void showGraphics(
 	ClearScreen();
 	unsigned int i;
 	for(i = 0; i < N; i++) {
-		DrawCircle(particles->x[i], particles->y[i], 1, 1, 
+		DrawCircle(particles->x[i], particles->y[i], 1, 1,
 				*(graphicsConstants->circleRadius), *(graphicsConstants->circleColour));
 	}
 	Refresh();
