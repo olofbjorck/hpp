@@ -35,7 +35,7 @@
 int main(int argc, char const *argv[]) {
 	// Check proper number of input arguments
 	if (argc != 8) {
-		printf("%s\n", "Input error: Expected 6 input arguments");
+		printf("%s\n", "Input error: Expected 7 input arguments");
 		return 1;
 	}
 

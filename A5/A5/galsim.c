@@ -61,19 +61,26 @@ void simulate(
 	// Declare thread args
 	threadData_t* data[n_threads];
 
+	// Check how many threads to use
+	int n_threadsToUse;
+	if (N >= n_threads) {
+		n_threadsToUse = n_threads;
+	} else {
+		n_threadsToUse = N;
+	}
+
 	// Compute workload for the threads
 	int workSize;
-	int n_threadsLeftover = N % n_threads;
+	int n_threadsLeftover = N % n_threadsToUse;
 	if (n_threadsLeftover) {
-		workSize = (N - n_threadsLeftover)/n_threads;
+		workSize = (N - n_threadsLeftover)/n_threadsToUse;
 	} else {
-		workSize = N/n_threads;
+		workSize = N/n_threadsToUse;
 	}
 
 	// Create thread data
-	unsigned int i;
 	unsigned int j;
-	for (j = 0; j < n_threads - 1; j++) {
+	for (j = 0; j < n_threadsToUse - 1; j++) {
 		// Initialize argument data and then create thread
 		data[j] = (threadData_t*) malloc(sizeof(threadData_t));
 		data[j]->root = &root;
@@ -91,18 +98,19 @@ void simulate(
 	data[j]->iEnd = N;
 
 	// Simulate
+	unsigned int i;
 	for (i = 0; i < nsteps; i++) {
 
 		// Build quadtree
 		buildQuadtree(particles, N, &root);
 
 		// Create threads
-		for (j = 0; j < n_threads; j++) {
+		for (j = 0; j < n_threadsToUse; j++) {
 			pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
 		}
 
 		// Join threads
-		for (j = 0; j < n_threads; j++) {
+		for (j = 0; j < n_threadsToUse; j++) {
 			pthread_join(threads[j], NULL);
 		}
 
@@ -111,9 +119,10 @@ void simulate(
 	}
 
 	// Free thread data
-	for(i = 0; i < n_threads; i++) {
+	for(i = 0; i < n_threadsToUse; i++) {
 		free(data[i]);
 	}
+
 }
 
 // Simulate the movement of the particles and show graphically
