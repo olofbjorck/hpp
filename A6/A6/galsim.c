@@ -134,7 +134,7 @@ static void updateParticles(
 
 	// Loop particles
 	unsigned int i;
-	#pragma omp parallel //private(a_x, a_y)
+	#pragma omp parallel
 	{
 		#pragma omp for schedule(auto)
 		{
@@ -217,7 +217,7 @@ static void showGraphics(
 				*(graphicsConstants->circleRadius), *(graphicsConstants->circleColour));
 	}
 	Refresh();
-	usleep(3000);	// TODO make variable fps
+	usleep(3000);	
 }
 
 
