@@ -132,21 +132,17 @@ static void updateParticles(
 	const double theta_max = *(simulationConstants->theta_max);
 	const double N = *(simulationConstants->N);
 
-	// Declare acceleration
-	double a_x; // x-acceleration
-	double a_y; // y-acceleration
-
 	// Loop particles
 	unsigned int i;
-	#pragma omp parallel private(a_x, a_y)
+	#pragma omp parallel //private(a_x, a_y)
 	{
 		#pragma omp for schedule(auto)
 		{
 			for (i = 0; i < N; i++) {
 
 				// Set acceleration to zero
-				a_x = 0.0;
-				a_y = 0.0;
+				double a_x = 0.0;
+				double a_y = 0.0;
 				const double x = particles->x[i];
 				const double y = particles->y[i];
 
