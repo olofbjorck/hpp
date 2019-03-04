@@ -9,7 +9,7 @@
 #include "graphics.h"
 #include <math.h>
 #include "quadtree.h"
-#include <pthread.h>
+#include <omp.h>
 
 /**
  * Simulates the movement of all the particles in particle_t* particles array.
