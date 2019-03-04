@@ -4,12 +4,6 @@
 #define GRAPHICS_FPS 30
 
 /*******************************************************************************
-GLOBAL PTHREAD VARIABLES
-*******************************************************************************/
-
-//pthread_mutex_t lock;
-
-/*******************************************************************************
 STATIC FUNCTION DECLARATIONS
 *******************************************************************************/
 
@@ -18,7 +12,7 @@ static void updateParticles(
 		particles_t* __restrict particles,
 		simulationConstants_t* __restrict simulationConstants);
 
-static inline void calculateForces(
+static void calculateForces(
 		double x,
 		double y,
 		node_t* __restrict node,
@@ -50,28 +44,18 @@ void simulate(
 		particles_t* __restrict particles,
 		simulationConstants_t* __restrict simulationConstants) {
 
-	// Extract simulation constants
-	const int N = *simulationConstants->N;
-	const int n_threads = *simulationConstants->n_threads;
-	const int nsteps = *simulationConstants->nsteps;
-
 	// Set number of threads
-	printf("\nIn simulate:\n");
-	printf("num_threads = %d before setting to n_threads = %d\n",
-			omp_get_num_threads(), n_threads);
-	omp_set_num_threads(n_threads);
-	printf("num_threads = %d after setting\n",  omp_get_num_threads());
-	printf("%s\n", "");
+	omp_set_num_threads(*simulationConstants->n_threads);
 
 	// Create root
 	node_t root;
 
 	// Simulate
 	unsigned int i;
-	for (i = 0; i < nsteps; i++) {
+	for (i = 0; i < *simulationConstants->nsteps; i++) {
 
 		// Build quadtree
-		buildQuadtree(particles, N, &root);
+		buildQuadtree(particles, *simulationConstants->N, &root);
 
 		// Update particles
 		updateParticles(&root, particles, simulationConstants);
@@ -82,17 +66,12 @@ void simulate(
 
 }
 
+
 // Simulate the movement of the particles and show graphically
 void simulateWithGraphics(
 		particles_t* __restrict particles,
 		simulationConstants_t* simulationConstants,
 		graphicsConstants_t* graphicsConstants) {
-// 	TODO: Not implemented
-/*
-	// Simulation constants
-	const int N = *simulationConstants->N;
-	const int n_threads = *simulationConstants->n_threads;
-	const int nsteps = *simulationConstants->nsteps;
 
 	// Graphics constants
 	const char* program = *graphicsConstants->program;
@@ -102,88 +81,39 @@ void simulateWithGraphics(
 	InitializeGraphics((char*) program, windowSize, windowSize);
 	SetCAxes(0,1);	// Color axis (so 0 = white, 1 = black)
 
-	// Declare threads
-	pthread_t threads[n_threads];
-
-	// Declare thread args
-	threadData_t** data = (threadData_t**) malloc(n_threads*sizeof(threadData_t*));
-
-	// Compute workload for the threads
-	int workSize;
-	int n_threadsLeftover = N % n_threads;
-	if (n_threadsLeftover) {
-		workSize = (N - n_threadsLeftover)/n_threads;
-	} else {
-		workSize = N/n_threads;
-	}
-
-	// Create thread data
-	unsigned int i;
-	unsigned int j;
-	node_t* root = (node_t*) malloc(sizeof(node_t));
-	for (j = 0; j < n_threads - 1; j++) {
-		// Initialize argument data and then create thread
-		data[j] = (threadData_t*) malloc(sizeof(threadData_t));
-		data[j]->root = root;
-		data[j]->particles = particles;
-		data[j]->simulationConstants = simulationConstants;
-		data[j]->iStart = j * workSize;
-		data[j]->iEnd = data[j]->iStart + workSize;
-	}
-	// Create last thread that includes leftover computations
-	data[j] = (threadData_t*) malloc(sizeof(threadData_t));
-	data[j]->root = root;
-	data[j]->particles = particles;
-	data[j]->simulationConstants = simulationConstants;
-	data[j]->iStart = N - workSize - n_threadsLeftover;
-	data[j]->iEnd = N;
+	// Create root
+	node_t root;
 
 	// Simulate
-	void* status;
+	unsigned int i;
 	double loopTimer;
-	for (i = 0; i < nsteps; i++) {
+	for (i = 0; i < *simulationConstants->nsteps; i++) {
 		clock_t timeBefore = clock();	// for fps
 
 		// Build quadtree
-		buildQuadtree(particles, N, root);
+		buildQuadtree(particles, *simulationConstants->N, &root);
 
-		// Create threads
-		for (j = 0; j < n_threads; j++) {
-			pthread_create(&threads[j], NULL, updateParticles, (void*) data[j]);
-		}
-
-		// Join threads
-		for (j = 0; j < n_threads; j++) {
-			pthread_join(threads[j], &status);
-		}
+		// Update particles
+		updateParticles(&root, particles, simulationConstants);
 
 		// Free quadtree
-		freeQuadtree(root);
+		freeQuadtree(&root);
 
 		// Variable fps
-		loopTimer = (double)(clock() - timeBefore)/CLOCKS_PER_SEC;	// Time in seconds
+		loopTimer = (double) (clock() - timeBefore)/CLOCKS_PER_SEC;	//Time in seconds
 		if(loopTimer < 1.0/GRAPHICS_FPS) {
 			usleep(1000000*(1.0/GRAPHICS_FPS - loopTimer));	// Time in useconds
-
-		// Graphics
-		showGraphics(particles, N, graphicsConstants);
 		}
+
+		// Show graphics
+		showGraphics(particles, *simulationConstants->N, graphicsConstants);
+
 	}
-
-	// Free thread data
-	for(i = 0; i < n_threads; i++) {
-		free(data[i]);
-	}
-	free(data);
-
-	// Free root
-	free(root);
-
 
 	// Remove graphics handles
 	FlushDisplay();
 	CloseDisplay();
-	*/
+
 }
 
 /*******************************************************************************
@@ -201,53 +131,46 @@ static void updateParticles(
 	const double delta_t = *(simulationConstants->delta_t);
 	const double theta_max = *(simulationConstants->theta_max);
 	const double N = *(simulationConstants->N);
-	const int n_threads = *(simulationConstants->n_threads);
 
 	// Declare acceleration
 	double a_x; // x-acceleration
 	double a_y; // y-acceleration
 
-	printf("\nIn updateParticles:\n");
-	printf("num_threads = %d before setting to n_threads = %d\n",
-			omp_get_num_threads(), n_threads);
-	omp_set_num_threads(n_threads);
-	printf("num_threads = %d after setting\n",  omp_get_num_threads());
-	printf("%s\n", "");
-
 	// Loop particles
 	unsigned int i;
-	#pragma omp parallel
+	#pragma omp parallel private(a_x, a_y)
 	{
-		for (i = 0; i < N; i++) {
+		#pragma omp for schedule(auto)
+		{
+			for (i = 0; i < N; i++) {
 
-			if (i == 0) printf("thread_id = %d\n", omp_get_thread_num());
+				// Set acceleration to zero
+				a_x = 0.0;
+				a_y = 0.0;
+				const double x = particles->x[i];
+				const double y = particles->y[i];
 
-			// Set acceleration to zero
-			a_x = 0.0;
-			a_y = 0.0;
-			const double x = particles->x[i];
-			const double y = particles->y[i];
+				// Update acceleration
+				calculateForces(
+						x, y,
+						root,
+						G, eps0, delta_t, theta_max,
+						&a_x, &a_y);
 
-			// Update acceleration
-			calculateForces(
-					x, y,
-					root,
-					G, eps0, delta_t, theta_max,
-					&a_x, &a_y);
+				// Update velocity
+				particles->v_x[i] += -G * delta_t * a_x;
+				particles->v_y[i] += -G * delta_t * a_y;
 
-			// Update velocity
-			particles->v_x[i] += -G * delta_t * a_x;
-			particles->v_y[i] += -G * delta_t * a_y;
-
-			// Update position
-			particles->x[i] += delta_t * particles->v_x[i];
-			particles->y[i] += delta_t * particles->v_y[i];
+				// Update position
+				particles->x[i] += delta_t * particles->v_x[i];
+				particles->y[i] += delta_t * particles->v_y[i];
+			}
 		}
 	}
 }
 
 // Calculates force exerted on every particle, recursively
-static inline void calculateForces(
+static void calculateForces(
 		const double x,
 		const double y,
 		node_t* __restrict node,

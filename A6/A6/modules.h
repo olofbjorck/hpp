@@ -45,12 +45,3 @@ typedef struct graphicsConstants {
 	const float* circleRadius;
 	const float* circleColour;
 } graphicsConstants_t;
-
-// Argument for threaded function updateParticles()
-typedef struct threadData {
-	node_t* root;
-	particles_t* particles;
-	const simulationConstants_t* simulationConstants;
-	unsigned int iStart;
-	unsigned int iEnd;
-} threadData_t;
