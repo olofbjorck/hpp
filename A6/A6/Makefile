@@ -1,8 +1,8 @@
 CC = gcc
-CFLAGS = -Wall -O3 -march=native -funroll-loops -ffast-math
+CFLAGS = -Wall -O3 -march=native -funroll-loops -ffast-math -Xpreprocessor -fopenmp
 #CFLAGS += -fopt-info-vec
 #CFLAGS += -g
-LDFLAGS = -L/opt/X11/lib -lX11 -lm -pthread
+LDFLAGS = -L/opt/X11/lib -lX11 -lm -lomp #-pthread
 
 INCLUDES = -I/opt/X11/include -Igraphics
 
