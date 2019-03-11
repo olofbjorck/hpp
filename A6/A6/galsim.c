@@ -4,8 +4,8 @@
 #define GRAPHICS_FPS 30
 
 /*******************************************************************************
-STATIC FUNCTION DECLARATIONS
-*******************************************************************************/
+  STATIC FUNCTION DECLARATIONS
+ *******************************************************************************/
 
 static void updateParticles(
 		node_t* __restrict root,
@@ -29,15 +29,15 @@ static void showGraphics(
 		graphicsConstants_t* __restrict graphicsConstants);
 
 /* Debug funcs
-void printParticles(particles_t* particles, int N);
-double printQuadtree(node_t* node);
-void printTotalMass(particles_t* particles, int N);
-void printCorrectCOM(particles_t* particles, int N);
-*/
+   void printParticles(particles_t* particles, int N);
+   double printQuadtree(node_t* node);
+   void printTotalMass(particles_t* particles, int N);
+   void printCorrectCOM(particles_t* particles, int N);
+   */
 
 /*******************************************************************************
-FUNCTION DEFINITIONS
-*******************************************************************************/
+  FUNCTION DEFINITIONS
+ *******************************************************************************/
 
 // Simulate the movement of the particles
 void simulate(
@@ -117,8 +117,8 @@ void simulateWithGraphics(
 }
 
 /*******************************************************************************
-STATIC FUNCTION DEFINITIONS
-*******************************************************************************/
+  STATIC FUNCTION DEFINITIONS
+ *******************************************************************************/
 
 static void updateParticles(
 		node_t* __restrict root,
@@ -130,14 +130,13 @@ static void updateParticles(
 	const double eps0 = *(simulationConstants->eps0);
 	const double delta_t = *(simulationConstants->delta_t);
 	const double theta_max = *(simulationConstants->theta_max);
-	const double N = *(simulationConstants->N);
+	const int N = *(simulationConstants->N);
 
 	// Loop particles
 	unsigned int i;
 	#pragma omp parallel
 	{
 		#pragma omp for schedule(auto)
-		{
 			for (i = 0; i < N; i++) {
 
 				// Set acceleration to zero
@@ -161,7 +160,6 @@ static void updateParticles(
 				particles->x[i] += delta_t * particles->v_x[i];
 				particles->y[i] += delta_t * particles->v_y[i];
 			}
-		}
 	}
 }
 
@@ -184,7 +182,7 @@ static void calculateForces(
 
 	// Check if box has children, then theta
 	if (node->children &&
-		(node->sideHalf + node->sideHalf) > theta_max * r)  {
+			(node->sideHalf + node->sideHalf) > theta_max * r)  {
 		// Travel branch
 		unsigned int i;
 		for(i = 0; i < 4; i++) {
@@ -219,57 +217,3 @@ static void showGraphics(
 	Refresh();
 	usleep(3000);	
 }
-
-
-/*******************************************************************************
-DEBUG FUNCTIONS
-*******************************************************************************/
-
-/*
-double printQuadtree(node_t* node) {
-	double mass = node->mass;
-	if (node->children[0]) {
-		unsigned int i;
-		for (i = 0; i < 4; i++) {
-			if (!node->children[0]) {
-			mass += printQuadtree(node->children[i]);}
-		}
-	}
-	//printf("mass = %lf, (x, y) = (%lf, %lf)\n", node->mass, node->xCenterOfMass, node->yCenterOfMass);
-	return mass;
-}
-
-void printParticles(particles_t* particles, int N) {
-	unsigned int i;
-	for (i = 0; i < N; i++) {
-		//printf("Particle %d:\n", i);
-		////printf("... (x, y) = (%lf, %lf)\n", particles[i].x, particles[i].y);
-		////printf("... mass = %lf\n", particles[i].mass);
-		//printf("... (x, y) = (%lf, %lf)\n", particles->x[i], particles->y[i]);
-	}
-}
-
-void printTotalMass(particles_t* particles, int N) {
-	unsigned int i;
-	double mass = 0;
-	for (i = 0; i < N; i++) {
-		mass += particles->mass[i];
-	}
-	printf("particles total mass = %lf\n", mass);
-}
-
-void printCorrectCOM(particles_t* particles, int N) {
-	double x = 0.0;
-	double y = 0.0;
-	unsigned int i;
-	double mass = 0;
-	for (i = 0; i < N; i++) {
-		x += particles->x[i]*particles->mass[i];
-		y += particles->y[i]*particles->mass[i];
-		mass += particles->mass[i];
-	}
-	x = x/mass;
-	y = y/mass;
-	printf("Particles COM (x, y) = (%lf, %lf)\n", x, y);
-}
-*/
