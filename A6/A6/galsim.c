@@ -45,7 +45,9 @@ void simulate(
 		simulationConstants_t* __restrict simulationConstants) {
 
 	// Set number of threads
+	#ifdef _OPENMP
 	omp_set_num_threads(*simulationConstants->n_threads);
+	#endif
 
 	// Create root
 	node_t root;
