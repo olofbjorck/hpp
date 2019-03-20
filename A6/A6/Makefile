@@ -1,10 +1,14 @@
 CC = gcc
-CFLAGS = -Wall -O3 -march=native -funroll-loops -ffast-math
-CFLAGS += -Xpreprocessor -fopenmp
-#CFLAGS += -g
-LDFLAGS = -L/opt/X11/lib -lX11 -lm -lomp
-
+CFLAGS = -Wall -O3 -march=native -funroll-loops -ffast-math -fopenmp
+LDFLAGS = -L/opt/X11/lib -lX11 -lm -fopenmp
 INCLUDES = -I/opt/X11/include -Igraphics
+
+# Debug
+#CFLAGS += -g
+
+# Mac
+#CFLAGS += -Xpreprocessor
+#LDFLAGS += -lomp
 
 galsim: io.o main.o quadtree.o galsim.o graphics.o
 	$(CC) galsim.o graphics.o main.o quadtree.o io.o -o galsim $(LDFLAGS)
