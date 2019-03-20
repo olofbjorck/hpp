@@ -130,7 +130,7 @@ static void updateParticles(
 	const double eps0 = *(simulationConstants->eps0);
 	const double delta_t = *(simulationConstants->delta_t);
 	const double theta_max = *(simulationConstants->theta_max);
-	const double N = *(simulationConstants->N);
+	const int N = *(simulationConstants->N);
 
 	// Loop particles
 	unsigned int i;
@@ -217,7 +217,7 @@ static void showGraphics(
 				*(graphicsConstants->circleRadius), *(graphicsConstants->circleColour));
 	}
 	Refresh();
-	usleep(3000);	
+	usleep(3000);
 }
 
 

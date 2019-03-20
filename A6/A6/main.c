@@ -33,6 +33,7 @@
  *
  */
 int main(int argc, char const *argv[]) {
+
 	// Check proper number of input arguments
 	if (argc != 8) {
 		printf("%s\n", "Input error: Expected 7 input arguments");
@@ -47,7 +48,7 @@ int main(int argc, char const *argv[]) {
 	const double delta_t = atof(argv[4]); // Timestep
 	const double theta_max = atof(argv[5]);
 	const int graphics = atoi(argv[6]); // Graphics on/off as 1/0
-	const int n_threads = atoi(argv[7]);
+	const int n_threads = atoi(argv[7]); // Number of threads
 
 	// Constants for the simulation
 	const double G = 100.0/N; // Gravitational constant
